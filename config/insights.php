@@ -56,9 +56,9 @@ return [
     ],
 
     'requirements' => [
-        'min-quality' => 95,
-        'min-complexity' => 95,
-        'min-architecture' => 95,
+        'min-quality' => 100,
+        'min-complexity' => 100,
+        'min-architecture' => 100,
         'min-style' => 100,
     ],
 
