@@ -1,0 +1,109 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\ClientProjects\Tables;
+
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\Column;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\BaseFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
+
+class ClientProjectsTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->columns(self::getColumns())
+            ->filters(self::getFilters())
+            ->recordActions(self::getRecordActions())
+            ->toolbarActions(self::getToolbarActions())
+        ;
+    }
+
+    /**
+     * @return list<Column>
+     */
+    private static function getColumns(): array
+    {
+        return [
+            TextColumn::make('id')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('name')
+                ->searchable(),
+            TextColumn::make('slug')
+                ->searchable()
+                ->sortable(),
+            IconColumn::make('is_active')
+                ->boolean(),
+            ...self::getTimestampColumns(),
+        ];
+    }
+
+    /**
+     * @return list<Column>
+     */
+    private static function getTimestampColumns(): array
+    {
+        return [
+            TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('deleted_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ];
+    }
+
+    /**
+     * @return list<BaseFilter>
+     */
+    private static function getFilters(): array
+    {
+        return [
+            TrashedFilter::make(),
+        ];
+    }
+
+    /**
+     * @return list<Action>
+     */
+    private static function getRecordActions(): array
+    {
+        return [
+            ViewAction::make(),
+            EditAction::make(),
+        ];
+    }
+
+    /**
+     * @return list<ActionGroup>
+     */
+    private static function getToolbarActions(): array
+    {
+        return [
+            BulkActionGroup::make([
+                DeleteBulkAction::make(),
+                ForceDeleteBulkAction::make(),
+                RestoreBulkAction::make(),
+            ]),
+        ];
+    }
+}
