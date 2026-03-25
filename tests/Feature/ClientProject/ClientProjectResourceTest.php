@@ -112,3 +112,45 @@ it('allows an authenticated user to access the list page', function (): void {
         ->assertCanSeeTableRecords($projects)
     ;
 });
+
+it('allows an authenticated user to view a soft deleted client project', function (): void {
+    $user = User::factory()->create();
+
+    $project = ClientProject::query()->create([
+        'name' => 'Legacy Support Portal',
+        'slug' => 'legacy-support-portal',
+        'description' => 'The previous self-service portal kept for reference during migration.',
+        'is_active' => false,
+    ]);
+
+    $project->delete();
+
+    actingAs($user);
+
+    get(ClientProjectResource::getUrl('view', ['record' => $project]))
+        ->assertOk()
+        ->assertSeeText('Legacy Support Portal')
+        ->assertSeeText('legacy-support-portal')
+        ->assertSeeText('The previous self-service portal kept for reference during migration.')
+    ;
+});
+
+it('allows an authenticated user to access the edit page', function (): void {
+    $user = User::factory()->create();
+
+    $project = ClientProject::query()->create([
+        'name' => 'Client Operations Workspace',
+        'slug' => 'client-operations-workspace',
+        'description' => 'The active workspace for client operations coordination.',
+        'is_active' => true,
+    ]);
+
+    actingAs($user);
+
+    get(ClientProjectResource::getUrl('edit', ['record' => $project]))
+        ->assertOk()
+        ->assertSeeText('Client Operations Workspace')
+        ->assertSeeText('Save changes')
+        ->assertSeeText('Slug')
+    ;
+});

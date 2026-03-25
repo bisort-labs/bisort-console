@@ -8,10 +8,14 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   quality:
     runs-on: ubuntu-latest
-    
+
     services:
       testing-database:
         image: postgres:18-alpine
@@ -36,7 +40,7 @@ jobs:
         with:
           php-version: 8.4
           extensions: mbstring, intl, pgsql, pdo_pgsql, pdo_sqlite
-          coverage: none
+          coverage: pcov
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -61,3 +65,69 @@ jobs:
 
       - name: Run checks
         run: composer check
+
+      - name: Run tests with coverage
+        id: coverage
+        continue-on-error: true
+        run: |
+          set +e
+          ./vendor/bin/pest --colors=never --coverage --min=90 | tee coverage.txt
+          status=${PIPESTATUS[0]}
+          set -e
+
+          total=$(sed -n 's/.*Total:[[:space:]]*\([0-9.]\+[[:space:]]*%\).*/\1/p' coverage.txt | tail -n 1)
+
+          if [ -z "$total" ]; then
+            total="unavailable"
+          fi
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+
+          exit "$status"
+
+      - name: Comment PR coverage
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          COVERAGE_STATUS: ${{ steps.coverage.outputs.status }}
+          COVERAGE_TOTAL: ${{ steps.coverage.outputs.total }}
+        with:
+          script: |
+            const marker = '<!-- coverage-comment -->'
+            const total = process.env.COVERAGE_TOTAL || 'unavailable'
+            const status = process.env.COVERAGE_STATUS === '0' ? 'pass' : 'fail'
+            const body = `${marker}
+            Coverage: \`${total}\` (minimum: \`90%\`)
+            Status: \`${status}\``
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+
+            const existing = comments.find((comment) =>
+              comment.user?.login === 'github-actions[bot]' && comment.body?.includes(marker),
+            )
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              })
+            }
+
+      - name: Fail if coverage is below minimum
+        if: steps.coverage.outputs.status != '0'
+        run: exit 1
