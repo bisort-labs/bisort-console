@@ -6,6 +6,8 @@ namespace App\Filament\Resources\Leads\Schemas;
 
 use App\Models\Lead;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class LeadInfolist
@@ -16,57 +18,60 @@ class LeadInfolist
     }
 
     /**
-     * @return list<TextEntry>
+     * @return list<Section>
      */
     private static function getEntries(): array
     {
         return [
-            ...self::getOverviewEntries(),
-            ...self::getAddressEntries(),
-            ...self::getTimestampEntries(),
+            self::getOverviewEntries(),
+            self::getAddressEntries(),
+            self::getTimestampEntries(),
         ];
     }
 
-    /**
-     * @return list<TextEntry>
-     */
-    private static function getOverviewEntries(): array
+    private static function getOverviewEntries(): Section
     {
-        return [
-            TextEntry::make('name'),
-            TextEntry::make('email')->label('Email address'),
-            TextEntry::make('company')->placeholder('-'),
-            TextEntry::make('phone')->placeholder('-'),
-            TextEntry::make('source')->placeholder('-'),
-            TextEntry::make('status')->badge()->placeholder('-'),
-            TextEntry::make('owner.name')->label('Owner')->placeholder('-'),
-        ];
+        return Section::make('Overview')
+            ->schema([
+                TextEntry::make('name'),
+                TextEntry::make('email')->label('Email address'),
+                TextEntry::make('company')->placeholder('-'),
+                TextEntry::make('phone')->placeholder('-'),
+                TextEntry::make('source')
+                    ->badge()
+                    ->placeholder('-'),
+                TextEntry::make('status')
+                    ->badge()
+                    ->placeholder('-'),
+                TextEntry::make('owner.name')->label('Owner')->placeholder('-'),
+            ])
+        ;
     }
 
-    /**
-     * @return list<TextEntry>
-     */
-    private static function getAddressEntries(): array
+    private static function getAddressEntries(): Section
     {
-        return [
-            TextEntry::make('street')->placeholder('-'),
-            TextEntry::make('city')->placeholder('-'),
-            TextEntry::make('state')->placeholder('-'),
-            TextEntry::make('zip')->placeholder('-'),
-            TextEntry::make('country')->placeholder('-'),
-        ];
+        return Section::make('Address')
+            ->schema([
+                TextEntry::make('street')->placeholder('-'),
+                TextEntry::make('city')->placeholder('-'),
+                TextEntry::make('state')->placeholder('-'),
+                TextEntry::make('zip')->placeholder('-'),
+                TextEntry::make('country')->placeholder('-'),
+            ])
+        ;
     }
 
-    /**
-     * @return list<TextEntry>
-     */
-    private static function getTimestampEntries(): array
+    private static function getTimestampEntries(): Section
     {
-        return [
-            self::makeTimestampEntry('created_at'),
-            self::makeTimestampEntry('updated_at'),
-            self::getDeletedAtEntry(),
-        ];
+        return Section::make('History')
+            ->columnSpanFull()
+            ->schema([
+                self::makeTimestampEntry('created_at'),
+                self::makeTimestampEntry('updated_at'),
+                self::getDeletedAtEntry(),
+                self::getActionLogs(),
+            ])
+        ;
     }
 
     private static function makeTimestampEntry(string $name): TextEntry
@@ -82,6 +87,17 @@ class LeadInfolist
         return TextEntry::make('deleted_at')
             ->dateTime()
             ->visible(fn (Lead $record): bool => $record->trashed())
+        ;
+    }
+
+    private static function getActionLogs(): ViewEntry
+    {
+        return ViewEntry::make('timeline')
+            ->label('Timeline')
+            ->view('filament.resources.action_logs.partials.timeline')
+            ->viewData(static fn (?Lead $record): array => [
+                'actions' => $record?->getTimelineActions() ?? collect(),
+            ])
         ;
     }
 }

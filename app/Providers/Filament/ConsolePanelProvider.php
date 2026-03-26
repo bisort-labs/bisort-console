@@ -28,25 +28,33 @@ class ConsolePanelProvider extends PanelProvider
     #[Override]
     public function panel(Panel $panel): Panel
     {
+        return $this->configureDiscovery(
+            $panel
+                ->default()
+                ->id('console')
+                ->path('console')
+                ->viteTheme('resources/css/filament/console/theme.css')
+                ->login()
+                ->colors([
+                    'primary' => Color::Emerald,
+                ])
+                ->widgets($this->getWidgets())
+                ->middleware($this->getMiddlewares())
+                ->authMiddleware([
+                    Authenticate::class,
+                ]),
+        );
+    }
+
+    private function configureDiscovery(Panel $panel): Panel
+    {
         return $panel
-            ->default()
-            ->id('console')
-            ->path('console')
-            ->login()
-            ->colors([
-                'primary' => Color::Emerald,
-            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets($this->getWidgets())
-            ->middleware($this->getMiddlewares())
-            ->authMiddleware([
-                Authenticate::class,
-            ])
         ;
     }
 

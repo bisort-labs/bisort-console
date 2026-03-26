@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
@@ -12,7 +13,7 @@ use Override;
 #[Fillable(['name', 'slug', 'description', 'is_active'])]
 class ClientProject extends Model
 {
-    use SoftDeletes;
+    use HasTimestamps, SoftDeletes;
 
     /**
      * @return array<string, string>

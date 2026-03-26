@@ -38,6 +38,14 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * @return HasMany<ActionLog, $this>
+     */
+    public function actionLogs(): HasMany
+    {
+        return $this->hasMany(ActionLog::class, 'actor_id');
+    }
+
+    /**
      * @return array<string, string>
      */
     #[Override]

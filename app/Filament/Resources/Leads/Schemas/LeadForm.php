@@ -37,7 +37,15 @@ class LeadForm
     {
         return [
             TextInput::make('name')->required(),
-            self::getEmailField(),
+            TextInput::make('email')
+                ->label('Email address')
+                ->email()
+                ->required()
+                ->live(onBlur: true)
+                ->unique(ignoreRecord: true)
+                ->validationMessages([
+                    'unique' => 'Email address is already in use.',
+                ]),
             TextInput::make('company'),
         ];
     }
@@ -67,19 +75,5 @@ class LeadForm
             Select::make('status')->options(LeadStatus::class)->default(LeadStatus::New),
             Select::make('owner_id')->relationship('owner', 'name'),
         ];
-    }
-
-    private static function getEmailField(): TextInput
-    {
-        return TextInput::make('email')
-            ->label('Email address')
-            ->email()
-            ->required()
-            ->live(onBlur: true)
-            ->unique(ignoreRecord: true)
-            ->validationMessages([
-                'unique' => 'Email address is already in use.',
-            ])
-        ;
     }
 }
