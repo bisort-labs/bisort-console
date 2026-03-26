@@ -12,6 +12,7 @@ use Filament\Facades\Filament;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\get;
+use function Pest\Laravel\withSession;
 
 beforeEach(function (): void {
     Filament::setCurrentPanel(Filament::getPanel('console'));
@@ -129,6 +130,8 @@ it('allows an authenticated user to view a soft deleted client project', functio
 
     get(ClientProjectResource::getUrl('view', ['record' => $project]))
         ->assertOk()
+        ->assertSeeText('Overview')
+        ->assertSeeText('History')
         ->assertSeeText('Legacy Support Portal')
         ->assertSeeText('legacy-support-portal')
         ->assertSeeText('The previous self-service portal kept for reference during migration.')
@@ -152,5 +155,26 @@ it('allows an authenticated user to access the edit page', function (): void {
         ->assertSeeText('Client Operations Workspace')
         ->assertSeeText('Save changes')
         ->assertSeeText('Slug')
+    ;
+});
+
+it('renders translated client project UI in german', function (): void {
+    $user = User::factory()->create();
+
+    $project = ClientProject::query()->create([
+        'name' => 'Client Operations Workspace',
+        'slug' => 'client-operations-workspace',
+        'description' => 'The active workspace for client operations coordination.',
+        'is_active' => true,
+    ]);
+
+    actingAs($user);
+
+    withSession(['locale' => 'de'])
+        ->get(ClientProjectResource::getUrl('edit', ['record' => $project]))
+        ->assertOk()
+        ->assertSeeText('Kundenprojekte')
+        ->assertSeeText('Beschreibung')
+        ->assertSeeText('Aktiv')
     ;
 });

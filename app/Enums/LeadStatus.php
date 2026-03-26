@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Support\Localization;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Override;
@@ -30,10 +31,10 @@ enum LeadStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::New => 'New',
-            self::Contacted => 'Contacted',
-            self::Qualified => 'Qualified',
-            self::Unqualified => 'Unqualified',
+            self::New => Localization::translate('fields.lead_statuses.new'),
+            self::Contacted => Localization::translate('fields.lead_statuses.contacted'),
+            self::Qualified => Localization::translate('fields.lead_statuses.qualified'),
+            self::Unqualified => Localization::translate('fields.lead_statuses.unqualified'),
         };
     }
 }

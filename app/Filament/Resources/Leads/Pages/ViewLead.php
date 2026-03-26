@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Leads\Pages;
 use App\Enums\ActionLogType;
 use App\Filament\Resources\Leads\LeadResource;
 use App\Models\Lead;
+use App\Support\Localization;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
@@ -38,9 +39,10 @@ class ViewLead extends ViewRecord
     private function getAddNoteAction(): Action
     {
         return Action::make('addNote')
-            ->label('Add Note')
+            ->label(Localization::translate('actions.add_note'))
             ->icon('heroicon-o-pencil-square')
-            ->modalHeading('Add Note')
+            ->modalHeading(Localization::translate('actions.add_note'))
+            ->modalSubmitActionLabel(Localization::translate('actions.add_note'))
             ->schema($this->getAddNoteSchema())
             ->action(function (array $data): void {
                 $title = isset($data['title']) && is_string($data['title']) ? $data['title'] : null;
@@ -58,10 +60,11 @@ class ViewLead extends ViewRecord
     {
         return [
             TextInput::make('title')
-                ->label('Title')
+                ->label(Localization::translate('fields.title'))
                 ->required()
                 ->maxLength(255),
             Textarea::make('body')
+                ->label(Localization::translate('fields.body'))
                 ->rows(6),
         ];
     }
@@ -76,7 +79,7 @@ class ViewLead extends ViewRecord
         ]);
 
         Notification::make()
-            ->title('Note added')
+            ->title(Localization::translate('messages.notifications.note_added'))
             ->success()
             ->send()
         ;

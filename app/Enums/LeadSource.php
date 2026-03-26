@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Support\Localization;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Override;
@@ -44,17 +45,17 @@ enum LeadSource: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Website => 'Website',
-            self::Referral => 'Referral',
-            self::ColdOutreach => 'Cold outreach',
-            self::LinkedIn => 'LinkedIn',
-            self::Facebook => 'Facebook',
-            self::GooglePlus => 'Google+',
-            self::Xing => 'Xing',
-            self::YouTube => 'YouTube',
-            self::Instagram => 'Instagram',
-            self::XCom => 'X.com',
-            self::Other => 'Other',
+            self::Website => Localization::translate('fields.lead_sources.website'),
+            self::Referral => Localization::translate('fields.lead_sources.referral'),
+            self::ColdOutreach => Localization::translate('fields.lead_sources.cold_outreach'),
+            self::LinkedIn => Localization::translate('fields.lead_sources.linked_in'),
+            self::Facebook => Localization::translate('fields.lead_sources.facebook'),
+            self::GooglePlus => Localization::translate('fields.lead_sources.google_plus'),
+            self::Xing => Localization::translate('fields.lead_sources.xing'),
+            self::YouTube => Localization::translate('fields.lead_sources.youtube'),
+            self::Instagram => Localization::translate('fields.lead_sources.instagram'),
+            self::XCom => Localization::translate('fields.lead_sources.x_com'),
+            self::Other => Localization::translate('fields.lead_sources.other'),
         };
     }
 }

@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Leads\Schemas;
 
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
+use App\Support\Localization;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
@@ -36,17 +37,19 @@ class LeadForm
     private static function getPrimaryFields(): array
     {
         return [
-            TextInput::make('name')->required(),
+            TextInput::make('name')
+                ->label(Localization::translate('fields.name'))
+                ->required(),
             TextInput::make('email')
-                ->label('Email address')
+                ->label(Localization::translate('fields.email_address'))
                 ->email()
                 ->required()
                 ->live(onBlur: true)
                 ->unique(ignoreRecord: true)
                 ->validationMessages([
-                    'unique' => 'Email address is already in use.',
+                    'unique' => Localization::translate('messages.validation.email_address_in_use'),
                 ]),
-            TextInput::make('company'),
+            TextInput::make('company')->label(Localization::translate('fields.company')),
         ];
     }
 
@@ -56,11 +59,11 @@ class LeadForm
     private static function getAddressFields(): array
     {
         return [
-            TextInput::make('street'),
-            TextInput::make('city'),
-            TextInput::make('state'),
-            TextInput::make('zip'),
-            TextInput::make('country'),
+            TextInput::make('street')->label(Localization::translate('fields.street')),
+            TextInput::make('city')->label(Localization::translate('fields.city')),
+            TextInput::make('state')->label(Localization::translate('fields.state')),
+            TextInput::make('zip')->label(Localization::translate('fields.zip')),
+            TextInput::make('country')->label(Localization::translate('fields.country')),
         ];
     }
 
@@ -70,10 +73,16 @@ class LeadForm
     private static function getLeadFields(): array
     {
         return [
-            TextInput::make('phone')->tel(),
-            Select::make('source')->options(LeadSource::class)->default(LeadSource::ColdOutreach),
-            Select::make('status')->options(LeadStatus::class)->default(LeadStatus::New),
-            Select::make('owner_id')->relationship('owner', 'name'),
+            TextInput::make('phone')->label(Localization::translate('fields.phone'))->tel(),
+            Select::make('source')
+                ->label(Localization::translate('fields.source'))
+                ->options(LeadSource::class)
+                ->default(LeadSource::ColdOutreach),
+            Select::make('status')
+                ->label(Localization::translate('fields.status'))
+                ->options(LeadStatus::class)
+                ->default(LeadStatus::New),
+            Select::make('owner_id')->label(Localization::translate('fields.owner'))->relationship('owner', 'name'),
         ];
     }
 }

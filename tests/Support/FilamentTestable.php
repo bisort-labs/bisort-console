@@ -90,9 +90,26 @@ final class FilamentTestable
         return $this;
     }
 
+    public function assertHasNoErrors(): self
+    {
+        $this->testable->assertHasNoErrors();
+
+        return $this;
+    }
+
     public function call(string $method, mixed ...$params): self
     {
         $this->testable->call($method, ...$params);
+
+        return $this;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $arguments
+     */
+    public function callAction(string $name, array $arguments = []): self
+    {
+        $this->testable->__call('callAction', [$name, $arguments]);
 
         return $this;
     }

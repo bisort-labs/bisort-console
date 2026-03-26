@@ -40,7 +40,6 @@ it('provides labels and colors for lead enums', function (): void {
 
 it('builds timeline actions from related action logs', function (): void {
     $lead = new Lead;
-
     $actor = new User;
     $actor->name = 'Morgan Lee';
 
@@ -49,16 +48,14 @@ it('builds timeline actions from related action logs', function (): void {
         'title' => null,
         'body' => 'Sent pricing summary',
         'happened_at' => '2026-03-26 08:00:00',
-    ]);
-    $olderLog->setRelation('actor', $actor);
+    ])->setRelation('actor', $actor);
 
     $recentLog = (new ActionLog)->setRawAttributes([
         'type' => ActionLogType::Note->value,
         'title' => 'follow up scheduled',
         'body' => null,
         'happened_at' => '2026-03-27 09:00:00',
-    ]);
-    $recentLog->setRelation('actor', null);
+    ])->setRelation('actor', null);
 
     $lead->setRelation('actionLogs', new EloquentCollection([
         $olderLog,
@@ -66,17 +63,23 @@ it('builds timeline actions from related action logs', function (): void {
     ]));
 
     $timelineActions = $lead->getTimelineActions();
+    $firstTimelineAction = $timelineActions->first();
+    $lastTimelineAction = $timelineActions->last();
+
+    if (!$firstTimelineAction instanceof ActionLogDTO || !$lastTimelineAction instanceof ActionLogDTO) {
+        throw new RuntimeException('Expected timeline actions to contain first and last entries.');
+    }
 
     expect($timelineActions)->toHaveCount(2)
-        ->and($timelineActions->first())->toBeInstanceOf(ActionLogDTO::class)
-        ->and($timelineActions->first()->title)->toBe('Follow up scheduled')
-        ->and($timelineActions->first()->body)->toBe('No body was given')
-        ->and($timelineActions->first()->happenedAt)->toBe(Carbon::parse('2026-03-27 09:00:00')->toString())
-        ->and($timelineActions->first()->actorName)->toBe('System')
-        ->and($timelineActions->last())->toBeInstanceOf(ActionLogDTO::class)
-        ->and($timelineActions->last()->title)->toBe('Untitled')
-        ->and($timelineActions->last()->body)->toBe('Sent pricing summary')
-        ->and($timelineActions->last()->happenedAt)->toBe(Carbon::parse('2026-03-26 08:00:00')->toString())
-        ->and($timelineActions->last()->actorName)->toBe('Morgan Lee')
+        ->and($firstTimelineAction)->toBeInstanceOf(ActionLogDTO::class)
+        ->and($firstTimelineAction->title)->toBe('Follow up scheduled')
+        ->and($firstTimelineAction->body)->toBe('No body was given')
+        ->and($firstTimelineAction->happenedAt)->toBe(Carbon::parse('2026-03-27 09:00:00')->toString())
+        ->and($firstTimelineAction->actorName)->toBe('System')
+        ->and($lastTimelineAction)->toBeInstanceOf(ActionLogDTO::class)
+        ->and($lastTimelineAction->title)->toBe('Untitled')
+        ->and($lastTimelineAction->body)->toBe('Sent pricing summary')
+        ->and($lastTimelineAction->happenedAt)->toBe(Carbon::parse('2026-03-26 08:00:00')->toString())
+        ->and($lastTimelineAction->actorName)->toBe('Morgan Lee')
     ;
 });

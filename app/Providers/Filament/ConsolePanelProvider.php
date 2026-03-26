@@ -4,20 +4,27 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\Console\Pages\Dashboard;
+use App\Http\Middleware\SetLocale;
+use App\Support\Localization;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Filament\Widgets\Widget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Foundation\Vite;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -28,22 +35,51 @@ class ConsolePanelProvider extends PanelProvider
     #[Override]
     public function panel(Panel $panel): Panel
     {
-        return $this->configureDiscovery(
+        return $this->configureDiscovery($this->configureBasePanel($panel));
+    }
+
+    private function configureBasePanel(Panel $panel): Panel
+    {
+        return $this->configureTheme(
             $panel
                 ->default()
                 ->id('console')
                 ->path('console')
-                ->viteTheme('resources/css/filament/console/theme.css')
                 ->login()
                 ->colors([
                     'primary' => Color::Emerald,
                 ])
+                ->renderHook(
+                    PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                    fn (): View => view('filament.partials.locale-switcher'),
+                )
+                ->navigationGroups($this->getNavigationGroups())
+                ->userMenuItems($this->getUserMenuItems())
                 ->widgets($this->getWidgets())
                 ->middleware($this->getMiddlewares())
-                ->authMiddleware([
-                    Authenticate::class,
-                ]),
+                ->authMiddleware($this->getAuthMiddlewares())
         );
+    }
+
+    private function configureTheme(Panel $panel): Panel
+    {
+        if ($this->hasThemeAssets() === false) {
+            return $panel;
+        }
+
+        return $panel->viteTheme('resources/css/filament/console/theme.css');
+    }
+
+    private function hasThemeAssets(): bool
+    {
+        if (app()->runningUnitTests()) {
+            return false;
+        }
+
+        /** @var Vite $vite */
+        $vite = app(Vite::class);
+
+        return $vite->isRunningHot() || is_file(public_path('build/manifest.json'));
     }
 
     private function configureDiscovery(Panel $panel): Panel
@@ -59,6 +95,21 @@ class ConsolePanelProvider extends PanelProvider
     }
 
     /**
+     * @return array<NavigationGroup>
+     */
+    private function getNavigationGroups(): array
+    {
+        return [
+            NavigationGroup::make()
+                ->label(fn (): string => Localization::translate('navigation.groups.overview'))
+                ->collapsible(false),
+            NavigationGroup::make()
+                ->label(fn (): string => Localization::translate('navigation.groups.management'))
+                ->collapsible(),
+        ];
+    }
+
+    /**
      * @return array<class-string<Widget>>
      */
     private function getWidgets(): array
@@ -70,6 +121,31 @@ class ConsolePanelProvider extends PanelProvider
     }
 
     /**
+     * @return array<Action>
+     */
+    private function getUserMenuItems(): array
+    {
+        return [
+            $this->makeLocaleSwitcherAction('en'),
+            $this->makeLocaleSwitcherAction('de'),
+        ];
+    }
+
+    private function makeLocaleSwitcherAction(string $locale): Action
+    {
+        $actionName = $locale === 'en' ? 'switchLocaleEn' : 'switchLocaleDe';
+
+        return Action::make($actionName)
+            ->label(fn (): string => Localization::translate("common.locales.{$locale}"))
+            ->color(fn (): string => app()->currentLocale() === $locale ? 'primary' : 'gray')
+            ->disabled(fn (): bool => app()->currentLocale() === $locale)
+            ->sort($locale === 'en' ? 10 : 11)
+            ->url(fn (): string => route('locale.switch', ['locale' => $locale]))
+            ->postToUrl()
+        ;
+    }
+
+    /**
      * @return array<class-string>
      */
     private function getMiddlewares(): array
@@ -78,12 +154,23 @@ class ConsolePanelProvider extends PanelProvider
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
+            SetLocale::class,
             AuthenticateSession::class,
             ShareErrorsFromSession::class,
             PreventRequestForgery::class,
             SubstituteBindings::class,
             DisableBladeIconComponents::class,
             DispatchServingFilamentEvent::class,
+        ];
+    }
+
+    /**
+     * @return array<class-string>
+     */
+    private function getAuthMiddlewares(): array
+    {
+        return [
+            Authenticate::class,
         ];
     }
 }

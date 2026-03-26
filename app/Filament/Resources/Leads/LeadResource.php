@@ -12,6 +12,7 @@ use App\Filament\Resources\Leads\Schemas\LeadForm;
 use App\Filament\Resources\Leads\Schemas\LeadInfolist;
 use App\Filament\Resources\Leads\Tables\LeadsTable;
 use App\Models\Lead;
+use App\Support\Localization;
 use BackedEnum;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\RelationManagers\RelationGroup;
@@ -29,7 +30,27 @@ class LeadResource extends Resource
 {
     protected static ?string $model = Lead::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+
+    protected static ?int $navigationSort = 10;
+
+    #[Override]
+    public static function getModelLabel(): string
+    {
+        return Localization::translate('navigation.resources.lead.singular');
+    }
+
+    #[Override]
+    public static function getPluralModelLabel(): string
+    {
+        return Localization::translate('navigation.resources.lead.plural');
+    }
+
+    #[Override]
+    public static function getNavigationGroup(): ?string
+    {
+        return Localization::translate('navigation.groups.management');
+    }
 
     #[Override]
     public static function form(Schema $schema): Schema

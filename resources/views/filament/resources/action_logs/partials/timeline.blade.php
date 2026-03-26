@@ -11,15 +11,9 @@
                         {{ $action->actorName }}
                     </div>
 
-                    @if ($action->body)
-                        <div class="mt-3 whitespace-pre-line break-words text-sm text-gray-600 dark:text-gray-300">
-                            {{ $action->body }}
-                        </div>
-                    @else
-                        <div class="mt-3 text-sm text-gray-400 dark:text-gray-500">
-                            No body was given
-                        </div>
-                    @endif
+                    <div class="mt-3 whitespace-pre-line break-words text-sm text-gray-600 dark:text-gray-300">
+                        {{ $action->body }}
+                    </div>
                 </div>
 
                 <div class="shrink-0 text-xs text-gray-500 dark:text-gray-400">
@@ -29,8 +23,7 @@
         </div>
     @empty
         <div class="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-            No actions yet.
+            {{ __('messages.timeline.no_actions_yet') }}
         </div>
     @endforelse
 </div>
-

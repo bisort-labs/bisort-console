@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'id' => 'ID',
+    'name' => 'Name',
+    'slug' => 'Slug',
+    'description' => 'Beschreibung',
+    'active' => 'Aktiv',
+    'email_address' => 'E-Mail-Adresse',
+    'company' => 'Unternehmen',
+    'street' => 'Straße',
+    'city' => 'Stadt',
+    'state' => 'Bundesland',
+    'zip' => 'PLZ',
+    'country' => 'Land',
+    'phone' => 'Telefon',
+    'source' => 'Quelle',
+    'status' => 'Status',
+    'owner' => 'Verantwortlich',
+    'title' => 'Titel',
+    'body' => 'Inhalt',
+    'created_at' => 'Erstellt am',
+    'updated_at' => 'Aktualisiert am',
+    'deleted_at' => 'Gelöscht am',
+    'lead_statuses' => [
+        'new' => 'Neu',
+        'contacted' => 'Kontaktiert',
+        'qualified' => 'Qualifiziert',
+        'unqualified' => 'Nicht qualifiziert',
+    ],
+    'lead_sources' => [
+        'website' => 'Website',
+        'referral' => 'Empfehlung',
+        'cold_outreach' => 'Kaltakquise',
+        'linked_in' => 'LinkedIn',
+        'facebook' => 'Facebook',
+        'google_plus' => 'Google+',
+        'xing' => 'Xing',
+        'youtube' => 'YouTube',
+        'instagram' => 'Instagram',
+        'x_com' => 'X.com',
+        'other' => 'Sonstiges',
+    ],
+];

@@ -11,11 +11,11 @@ use App\Models\ActionLog;
 use App\Models\Lead;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\get;
+use function Pest\Laravel\withSession;
 
 beforeEach(function (): void {
     Filament::setCurrentPanel(Filament::getPanel('console'));
@@ -59,7 +59,7 @@ it('allows an authenticated user to add a note from the lead view page', functio
 
     actingAs($user);
 
-    Livewire::test(ViewLead::class, ['record' => $lead->getKey()])
+    livewire(ViewLead::class, ['record' => $lead->getKey()])
         ->callAction('addNote', [
             'title' => 'Discovery call',
             'body' => '',
@@ -76,4 +76,25 @@ it('allows an authenticated user to add a note from the lead view page', functio
         'actionable_id' => $lead->getKey(),
         'actor_id' => $user->getKey(),
     ]);
+});
+
+it('renders translated lead UI in german', function (): void {
+    $user = User::factory()->create();
+
+    $lead = Lead::query()->create([
+        'name' => 'Northwind Prospect',
+        'email' => 'northwind@example.com',
+        'source' => LeadSource::ColdOutreach->value,
+        'status' => LeadStatus::Qualified->value,
+    ]);
+
+    actingAs($user);
+
+    withSession(['locale' => 'de'])
+        ->get(LeadResource::getUrl('view', ['record' => $lead]))
+        ->assertOk()
+        ->assertSeeText('Kaltakquise')
+        ->assertSeeText('Qualifiziert')
+        ->assertSeeText('Notiz hinzufügen')
+    ;
 });

@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Leads\Tables;
 
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
+use App\Support\Localization;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -50,10 +51,17 @@ class LeadsTable
     private static function getOverviewColumns(): array
     {
         return [
-            TextColumn::make('name')->searchable()->placeholder('-'),
-            TextColumn::make('company')->searchable()->sortable(),
-            TextColumn::make('status')->badge()->searchable()->sortable(),
-            TextColumn::make('source')->searchable()->sortable(),
+            TextColumn::make('name')
+                ->label(Localization::translate('fields.name'))
+                ->searchable()
+                ->placeholder(Localization::translate('common.placeholder')),
+            TextColumn::make('company')->label(Localization::translate('fields.company'))->searchable()->sortable(),
+            TextColumn::make('status')
+                ->label(Localization::translate('fields.status'))
+                ->badge()
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('source')->label(Localization::translate('fields.source'))->searchable()->sortable(),
         ];
     }
 
@@ -63,9 +71,9 @@ class LeadsTable
     private static function getContactColumns(): array
     {
         return [
-            TextColumn::make('email')->label('Email address')->searchable()->sortable(),
-            TextColumn::make('phone')->searchable(),
-            TextColumn::make('owner.name')->searchable()->sortable(),
+            TextColumn::make('email')->label(Localization::translate('fields.email_address'))->searchable()->sortable(),
+            TextColumn::make('phone')->label(Localization::translate('fields.phone'))->searchable(),
+            TextColumn::make('owner.name')->label(Localization::translate('fields.owner'))->searchable()->sortable(),
         ];
     }
 
@@ -84,6 +92,7 @@ class LeadsTable
     private static function makeTimestampColumn(string $name): TextColumn
     {
         return TextColumn::make($name)
+            ->label(Localization::translate("fields.{$name}"))
             ->dateTime()
             ->sortable()
             ->toggleable(isToggledHiddenByDefault: true)
@@ -97,9 +106,18 @@ class LeadsTable
     {
         return [
             TrashedFilter::make(),
-            SelectFilter::make('status')->options(LeadStatus::class)->searchable(),
-            SelectFilter::make('source')->options(LeadSource::class)->searchable(),
-            SelectFilter::make('owner')->relationship('owner', 'name')->searchable()->label('Owner'),
+            SelectFilter::make('status')
+                ->label(Localization::translate('fields.status'))
+                ->options(LeadStatus::class)
+                ->searchable(),
+            SelectFilter::make('source')
+                ->label(Localization::translate('fields.source'))
+                ->options(LeadSource::class)
+                ->searchable(),
+            SelectFilter::make('owner')
+                ->relationship('owner', 'name')
+                ->searchable()
+                ->label(Localization::translate('fields.owner')),
         ];
     }
 
