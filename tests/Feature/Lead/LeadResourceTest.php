@@ -6,6 +6,8 @@ use App\Enums\ActionLogType;
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Filament\Resources\Leads\LeadResource;
+use App\Filament\Resources\Leads\Pages\CreateLead;
+use App\Filament\Resources\Leads\Pages\ListLeads;
 use App\Filament\Resources\Leads\Pages\ViewLead;
 use App\Models\ActionLog;
 use App\Models\Lead;
@@ -19,6 +21,130 @@ use function Pest\Laravel\withSession;
 
 beforeEach(function (): void {
     Filament::setCurrentPanel(Filament::getPanel('console'));
+});
+
+it('creates a lead via the Filament form', function (): void {
+    $user = User::factory()->create();
+    $owner = User::factory()->create();
+
+    actingAs($user);
+
+    livewire(CreateLead::class)
+        ->fillForm([
+            'name' => 'Northwind Prospect',
+            'email' => 'northwind@example.com',
+            'company' => 'Northwind GmbH',
+            'street' => 'Unter den Linden 1',
+            'city' => 'Berlin',
+            'state' => 'Berlin',
+            'zip' => '10117',
+            'country' => 'Germany',
+            'phone' => '+49 30 123456',
+            'source' => LeadSource::Referral->value,
+            'status' => LeadStatus::Contacted->value,
+            'owner_id' => $owner->getKey(),
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified()
+        ->assertRedirect()
+    ;
+
+    assertDatabaseHas(Lead::class, [
+        'name' => 'Northwind Prospect',
+        'email' => 'northwind@example.com',
+        'company' => 'Northwind GmbH',
+        'street' => 'Unter den Linden 1',
+        'city' => 'Berlin',
+        'state' => 'Berlin',
+        'zip' => '10117',
+        'country' => 'Germany',
+        'phone' => '+49 30 123456',
+        'source' => LeadSource::Referral->value,
+        'status' => LeadStatus::Contacted->value,
+        'owner_id' => $owner->getKey(),
+    ]);
+});
+
+it('requires the email address to be unique', function (): void {
+    $user = User::factory()->create();
+
+    Lead::query()->create([
+        'name' => 'Existing Prospect',
+        'email' => 'existing@example.com',
+        'source' => LeadSource::Website->value,
+        'status' => LeadStatus::New->value,
+    ]);
+
+    actingAs($user);
+
+    livewire(CreateLead::class)
+        ->fillForm([
+            'name' => 'Duplicate Prospect',
+            'email' => 'existing@example.com',
+            'source' => LeadSource::LinkedIn->value,
+            'status' => LeadStatus::Qualified->value,
+        ])
+        ->call('create')
+        ->assertHasFormErrors([
+            'email' => 'unique',
+        ])
+    ;
+});
+
+it('allows an authenticated user to access the list page', function (): void {
+    $user = User::factory()->create();
+
+    $leads = collect([
+        Lead::query()->create([
+            'name' => 'Acme Prospect',
+            'email' => 'acme@example.com',
+            'company' => 'Acme Inc.',
+            'phone' => '+49 30 123456',
+            'source' => LeadSource::ColdOutreach->value,
+            'status' => LeadStatus::Qualified->value,
+        ]),
+        Lead::query()->create([
+            'name' => 'Helios Prospect',
+            'email' => 'helios@example.com',
+            'company' => 'Helios AG',
+            'phone' => '+49 89 987654',
+            'source' => LeadSource::Website->value,
+            'status' => LeadStatus::Contacted->value,
+        ]),
+    ]);
+
+    actingAs($user);
+
+    get(LeadResource::getUrl('index'))
+        ->assertOk()
+    ;
+
+    livewire(ListLeads::class)
+        ->assertCanSeeTableRecords($leads)
+    ;
+});
+
+it('allows an authenticated user to access the edit page', function (): void {
+    $user = User::factory()->create();
+
+    $lead = Lead::query()->create([
+        'name' => 'Client Operations Prospect',
+        'email' => 'client-operations@example.com',
+        'company' => 'Northwind GmbH',
+        'phone' => '+49 40 123456',
+        'source' => LeadSource::Referral->value,
+        'status' => LeadStatus::Contacted->value,
+    ]);
+
+    actingAs($user);
+
+    get(LeadResource::getUrl('edit', ['record' => $lead]))
+        ->assertOk()
+        ->assertSeeText('Save changes')
+        ->assertSeeText('Email address')
+        ->assertSeeText('Owner')
+    ;
 });
 
 it('allows an authenticated user to view a soft deleted lead with enum labels', function (): void {
