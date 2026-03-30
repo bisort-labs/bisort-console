@@ -9,7 +9,9 @@ use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
 use NunoMaduro\PhpInsights\Domain\Metrics\Architecture\Classes;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
+use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff;
 
 return [
     'preset' => 'laravel',
@@ -36,11 +38,7 @@ return [
         ForbiddenNormalClasses::class,
         ForbiddenTraits::class,
         UselessFunctionDocCommentSniff::class,
-
-        // Let Pint own brace formatting
-        'PHP_CodeSniffer\\Standards\\PEAR\\Sniffs\\WhiteSpace\\ScopeClosingBraceSniff',
-        'PhpCsFixer\\Fixer\\ClassNotation\\ClassDefinitionFixer',
-        'PhpCsFixer\\Fixer\\Basic\\BracesFixer',
+        ReturnTypeHintSniff::class,
     ],
 
     'config' => [
@@ -48,6 +46,11 @@ return [
             'lineLimit' => 120,
             'absoluteLineLimit' => 160,
             'ignoreComments' => false,
+        ],
+
+        FunctionLengthSniff::class => [
+            'maxLinesLength' => 25,
+            'includeComments' => true,
         ],
 
         CyclomaticComplexityIsHigh::class => [

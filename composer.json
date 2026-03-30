@@ -16,7 +16,6 @@
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.9",
         "laravel/pail": "^1.2.5",
-        "laravel/pint": "^1.29",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "nunomaduro/phpinsights": "^2.14",
@@ -57,7 +56,6 @@
         "check": [
             "@php artisan config:clear --ansi",
             "@analyse",
-            "@lint",
             "@refactor:dry",
             "@insights",
             "@php artisan test --parallel"
@@ -66,8 +64,7 @@
             "phpstan analyse --memory-limit=1G",
             "phpstan clear-result-cache"
         ],
-        "format": "pint",
-        "lint": "pint --test",
+        "format": "@php artisan insights --fix --no-interaction",
         "refactor": "rector process",
         "refactor:dry": "rector process --dry-run",
         "insights": "@php artisan insights --no-interaction",

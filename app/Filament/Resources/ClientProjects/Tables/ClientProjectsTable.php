@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ClientProjects\Tables;
 
+use App\Support\Localization;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -38,14 +39,18 @@ class ClientProjectsTable
     {
         return [
             TextColumn::make('id')
+                ->label(Localization::translate('fields.id'))
                 ->searchable()
                 ->sortable(),
             TextColumn::make('name')
+                ->label(Localization::translate('fields.name'))
                 ->searchable(),
             TextColumn::make('slug')
+                ->label(Localization::translate('fields.slug'))
                 ->searchable()
                 ->sortable(),
             IconColumn::make('is_active')
+                ->label(Localization::translate('fields.active'))
                 ->boolean(),
             ...self::getTimestampColumns(),
         ];
@@ -58,14 +63,17 @@ class ClientProjectsTable
     {
         return [
             TextColumn::make('created_at')
+                ->label(Localization::translate('fields.created_at'))
                 ->dateTime()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('updated_at')
+                ->label(Localization::translate('fields.updated_at'))
                 ->dateTime()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('deleted_at')
+                ->label(Localization::translate('fields.deleted_at'))
                 ->dateTime()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),

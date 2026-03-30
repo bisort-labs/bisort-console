@@ -12,6 +12,7 @@ use App\Filament\Resources\ClientProjects\Schemas\ClientProjectForm;
 use App\Filament\Resources\ClientProjects\Schemas\ClientProjectInfolist;
 use App\Filament\Resources\ClientProjects\Tables\ClientProjectsTable;
 use App\Models\ClientProject;
+use App\Support\Localization;
 use BackedEnum;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\RelationManagers\RelationGroup;
@@ -29,9 +30,29 @@ class ClientProjectResource extends Resource
 {
     protected static ?string $model = ClientProject::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;
+
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    #[Override]
+    public static function getModelLabel(): string
+    {
+        return Localization::translate('navigation.resources.client_project.singular');
+    }
+
+    #[Override]
+    public static function getPluralModelLabel(): string
+    {
+        return Localization::translate('navigation.resources.client_project.plural');
+    }
+
+    #[Override]
+    public static function getNavigationGroup(): ?string
+    {
+        return Localization::translate('navigation.groups.management');
+    }
 
     #[Override]
     public static function form(Schema $schema): Schema

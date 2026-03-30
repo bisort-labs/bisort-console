@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'id' => 'ID',
+    'name' => 'Name',
+    'slug' => 'Slug',
+    'description' => 'Description',
+    'active' => 'Active',
+    'email_address' => 'Email address',
+    'company' => 'Company',
+    'street' => 'Street',
+    'city' => 'City',
+    'state' => 'State',
+    'zip' => 'ZIP',
+    'country' => 'Country',
+    'phone' => 'Phone',
+    'source' => 'Source',
+    'status' => 'Status',
+    'owner' => 'Owner',
+    'title' => 'Title',
+    'body' => 'Body',
+    'created_at' => 'Created at',
+    'updated_at' => 'Updated at',
+    'deleted_at' => 'Deleted at',
+    'lead_statuses' => [
+        'new' => 'New',
+        'contacted' => 'Contacted',
+        'qualified' => 'Qualified',
+        'unqualified' => 'Unqualified',
+    ],
+    'lead_sources' => [
+        'website' => 'Website',
+        'referral' => 'Referral',
+        'cold_outreach' => 'Cold outreach',
+        'linked_in' => 'LinkedIn',
+        'facebook' => 'Facebook',
+        'google_plus' => 'Google+',
+        'xing' => 'Xing',
+        'youtube' => 'YouTube',
+        'instagram' => 'Instagram',
+        'x_com' => 'X.com',
+        'other' => 'Other',
+    ],
+];
