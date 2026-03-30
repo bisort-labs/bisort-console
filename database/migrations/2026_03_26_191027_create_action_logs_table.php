@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'actor_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamp('happened_at')->useCurrent();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

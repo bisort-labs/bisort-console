@@ -4,64 +4,74 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Leads\Schemas;
 
+use App\Mappers\ActionLogTimelineMapper;
 use App\Models\Lead;
 use App\Support\Localization;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class LeadInfolist
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components(self::getEntries());
-    }
-
-    /**
-     * @return list<Section>
-     */
-    private static function getEntries(): array
-    {
-        return [
+        return $schema->components([
             self::getOverviewEntries(),
             self::getAddressEntries(),
             self::getTimestampEntries(),
-        ];
+        ]);
     }
 
     private static function getOverviewEntries(): Section
     {
         return Section::make(Localization::translate('common.sections.overview'))
-            ->schema(self::getOverviewSchema())
+            ->schema([
+                TextEntry::make('name')
+                    ->label(Localization::translate('fields.name')),
+                TextEntry::make('email')
+                    ->label(Localization::translate('fields.email_address')),
+                TextEntry::make('company')
+                    ->label(Localization::translate('fields.company'))
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('phone')
+                    ->label(Localization::translate('fields.phone'))
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('source')
+                    ->label(Localization::translate('fields.source'))
+                    ->placeholder(Localization::translate('common.placeholder'))
+                    ->badge(),
+                TextEntry::make('status')
+                    ->label(Localization::translate('fields.status'))
+                    ->placeholder(Localization::translate('common.placeholder'))
+                    ->badge(),
+                TextEntry::make('owner.name')
+                    ->label(Localization::translate('fields.owner'))
+                    ->placeholder(Localization::translate('common.placeholder')),
+            ])
         ;
-    }
-
-    /**
-     * @return list<TextEntry>
-     */
-    private static function getOverviewSchema(): array
-    {
-        return [
-            self::makeEntry('name', 'fields.name'),
-            self::makeEntry('email', 'fields.email_address'),
-            self::makePlaceholderEntry('company', 'fields.company'),
-            self::makePlaceholderEntry('phone', 'fields.phone'),
-            self::makeBadgePlaceholderEntry('source', 'fields.source'),
-            self::makeBadgePlaceholderEntry('status', 'fields.status'),
-            self::makePlaceholderEntry('owner.name', 'fields.owner'),
-        ];
     }
 
     private static function getAddressEntries(): Section
     {
         return Section::make(Localization::translate('common.sections.address'))
             ->schema([
-                self::makePlaceholderEntry('street', 'fields.street'),
-                self::makePlaceholderEntry('city', 'fields.city'),
-                self::makePlaceholderEntry('state', 'fields.state'),
-                self::makePlaceholderEntry('zip', 'fields.zip'),
-                self::makePlaceholderEntry('country', 'fields.country'),
+                TextEntry::make('street')
+                    ->label(Localization::translate('fields.street'))
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('city')
+                    ->label(Localization::translate('fields.city'))
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('state')
+                    ->label(Localization::translate('fields.state'))
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('zip')
+                    ->label(Localization::translate('fields.zip'))
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('country')
+                    ->label(Localization::translate('fields.country'))
+                    ->placeholder(Localization::translate('common.placeholder')),
             ])
         ;
     }
@@ -71,60 +81,24 @@ class LeadInfolist
         return Section::make(Localization::translate('common.sections.history'))
             ->columnSpanFull()
             ->schema([
-                self::makeTimestampEntry('created_at'),
-                self::makeTimestampEntry('updated_at'),
-                self::getDeletedAtEntry(),
-                self::getActionLogs(),
-            ])
-        ;
-    }
-
-    private static function makeTimestampEntry(string $name): TextEntry
-    {
-        return TextEntry::make($name)
-            ->label(Localization::translate("fields.{$name}"))
-            ->dateTime()
-            ->placeholder(Localization::translate('common.placeholder'))
-        ;
-    }
-
-    private static function makeEntry(string $name, string $label): TextEntry
-    {
-        return TextEntry::make($name)
-            ->label(Localization::translate($label))
-        ;
-    }
-
-    private static function makePlaceholderEntry(string $name, string $label): TextEntry
-    {
-        return self::makeEntry($name, $label)
-            ->placeholder(Localization::translate('common.placeholder'))
-        ;
-    }
-
-    private static function makeBadgePlaceholderEntry(string $name, string $label): TextEntry
-    {
-        return self::makePlaceholderEntry($name, $label)
-            ->badge()
-        ;
-    }
-
-    private static function getDeletedAtEntry(): TextEntry
-    {
-        return TextEntry::make('deleted_at')
-            ->label(Localization::translate('fields.deleted_at'))
-            ->dateTime()
-            ->visible(fn (Lead $record): bool => $record->trashed())
-        ;
-    }
-
-    private static function getActionLogs(): ViewEntry
-    {
-        return ViewEntry::make('timeline')
-            ->label(Localization::translate('common.sections.timeline'))
-            ->view('filament.resources.action_logs.partials.timeline')
-            ->viewData(static fn (?Lead $record): array => [
-                'actions' => $record?->getTimelineActions() ?? collect(),
+                TextEntry::make('created_at')
+                    ->label(Localization::translate('fields.created_at'))
+                    ->dateTime()
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('updated_at')
+                    ->label(Localization::translate('fields.updated_at'))
+                    ->dateTime()
+                    ->placeholder(Localization::translate('common.placeholder')),
+                TextEntry::make('deleted_at')
+                    ->label(Localization::translate('fields.deleted_at'))
+                    ->dateTime()
+                    ->visible(fn (Lead $record): bool => $record->trashed()),
+                ViewEntry::make('timeline')
+                    ->label(Localization::translate('common.sections.timeline'))
+                    ->view('filament.resources.action_logs.partials.timeline')
+                    ->viewData(static fn (?Lead $record): array => [
+                        'actions' => ActionLogTimelineMapper::map($record->actionLogs ?? new EloquentCollection()),
+                    ]),
             ])
         ;
     }

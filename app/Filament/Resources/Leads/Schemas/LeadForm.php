@@ -9,80 +9,70 @@ use App\Enums\LeadStatus;
 use App\Support\Localization;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class LeadForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components(self::getComponents());
+        return $schema->components([
+            self::getPrimaryFields(),
+            self::getLeadFields(),
+            self::getAddressFields(),
+        ]);
     }
 
-    /**
-     * @return list<Component>
-     */
-    private static function getComponents(): array
+    private static function getPrimaryFields(): Section
     {
-        return [
-            ...self::getPrimaryFields(),
-            ...self::getAddressFields(),
-            ...self::getLeadFields(),
-        ];
+        return Section::make(Localization::translate('common.sections.overview'))
+            ->schema([
+                TextInput::make('name')
+                    ->label(Localization::translate('fields.name'))
+                    ->required(),
+                TextInput::make('email')
+                    ->label(Localization::translate('fields.email_address'))
+                    ->email()
+                    ->required()
+                    ->live(onBlur: true)
+                    ->unique(ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => Localization::translate('messages.validation.email_address_in_use'),
+                    ]),
+                TextInput::make('company')->label(Localization::translate('fields.company')),
+            ])
+        ;
     }
 
-    /**
-     * @return list<Component>
-     */
-    private static function getPrimaryFields(): array
+    private static function getAddressFields(): Section
     {
-        return [
-            TextInput::make('name')
-                ->label(Localization::translate('fields.name'))
-                ->required(),
-            TextInput::make('email')
-                ->label(Localization::translate('fields.email_address'))
-                ->email()
-                ->required()
-                ->live(onBlur: true)
-                ->unique(ignoreRecord: true)
-                ->validationMessages([
-                    'unique' => Localization::translate('messages.validation.email_address_in_use'),
-                ]),
-            TextInput::make('company')->label(Localization::translate('fields.company')),
-        ];
+        return Section::make(Localization::translate('common.sections.address'))
+            ->columnSpanFull()
+            ->schema([
+                TextInput::make('street')->label(Localization::translate('fields.street')),
+                TextInput::make('city')->label(Localization::translate('fields.city')),
+                TextInput::make('state')->label(Localization::translate('fields.state')),
+                TextInput::make('zip')->label(Localization::translate('fields.zip')),
+                TextInput::make('country')->label(Localization::translate('fields.country')),
+            ])
+        ;
     }
 
-    /**
-     * @return list<Component>
-     */
-    private static function getAddressFields(): array
+    private static function getLeadFields(): Section
     {
-        return [
-            TextInput::make('street')->label(Localization::translate('fields.street')),
-            TextInput::make('city')->label(Localization::translate('fields.city')),
-            TextInput::make('state')->label(Localization::translate('fields.state')),
-            TextInput::make('zip')->label(Localization::translate('fields.zip')),
-            TextInput::make('country')->label(Localization::translate('fields.country')),
-        ];
-    }
-
-    /**
-     * @return list<Component>
-     */
-    private static function getLeadFields(): array
-    {
-        return [
-            TextInput::make('phone')->label(Localization::translate('fields.phone'))->tel(),
-            Select::make('source')
-                ->label(Localization::translate('fields.source'))
-                ->options(LeadSource::class)
-                ->default(LeadSource::ColdOutreach),
-            Select::make('status')
-                ->label(Localization::translate('fields.status'))
-                ->options(LeadStatus::class)
-                ->default(LeadStatus::New),
-            Select::make('owner_id')->label(Localization::translate('fields.owner'))->relationship('owner', 'name'),
-        ];
+        return Section::make(Localization::translate('common.sections.lead_details'))
+            ->schema([
+                TextInput::make('phone')->label(Localization::translate('fields.phone'))->tel(),
+                Select::make('source')
+                    ->label(Localization::translate('fields.source'))
+                    ->options(LeadSource::class)
+                    ->default(LeadSource::ColdOutreach),
+                Select::make('status')
+                    ->label(Localization::translate('fields.status'))
+                    ->options(LeadStatus::class)
+                    ->default(LeadStatus::New),
+                Select::make('owner_id')->label(Localization::translate('fields.owner'))->relationship('owner', 'name'),
+            ])
+        ;
     }
 }

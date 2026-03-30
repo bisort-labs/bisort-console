@@ -12,6 +12,7 @@ return [
     'sections' => [
         'overview' => 'Übersicht',
         'address' => 'Adresse',
+        'lead_details' => 'Lead-Details',
         'history' => 'Verlauf',
         'timeline' => 'Zeitachse',
     ],

@@ -15,7 +15,7 @@ class Localization
     {
         $translation = __($key, $replace);
 
-        if (is_string($translation) === false) {
+        if (! is_string($translation)) {
             throw new RuntimeException("Translation [{$key}] must resolve to a string.");
         }
 
@@ -29,19 +29,16 @@ class Localization
     {
         $configuredLocales = config('app.supported_locales', []);
 
-        if (is_array($configuredLocales) === false) {
+        if (! is_array($configuredLocales)) {
             return [];
         }
 
-        $supportedLocales = [];
+        $supportedLocales = array_filter(
+            $configuredLocales,
+            static fn (mixed $locale): bool => is_string($locale),
+        );
 
-        foreach ($configuredLocales as $configuredLocale) {
-            if (is_string($configuredLocale)) {
-                $supportedLocales[] = $configuredLocale;
-            }
-        }
-
-        return $supportedLocales;
+        return array_values($supportedLocales);
     }
 
     public static function defaultLocale(): string

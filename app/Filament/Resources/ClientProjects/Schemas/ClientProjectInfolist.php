@@ -15,18 +15,10 @@ class ClientProjectInfolist
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components(self::getEntries());
-    }
-
-    /**
-     * @return list<Section>
-     */
-    private static function getEntries(): array
-    {
-        return [
+        return $schema->components([
             self::getOverviewEntries(),
             self::getTimestampEntries(),
-        ];
+        ]);
     }
 
     private static function getOverviewEntries(): Section

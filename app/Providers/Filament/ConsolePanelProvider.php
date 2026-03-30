@@ -35,62 +35,55 @@ class ConsolePanelProvider extends PanelProvider
     #[Override]
     public function panel(Panel $panel): Panel
     {
-        return $this->configureDiscovery($this->configureBasePanel($panel));
+        $this->configureDiscovery($panel);
+        $this->configureTheme($panel);
+        $this->configureBasePanel($panel);
+
+        return $panel;
     }
 
-    private function configureBasePanel(Panel $panel): Panel
+    private function configureDiscovery(Panel $panel): void
     {
-        return $this->configureTheme(
-            $panel
-                ->default()
-                ->id('console')
-                ->path('console')
-                ->login()
-                ->colors([
-                    'primary' => Color::Emerald,
-                ])
-                ->renderHook(
-                    PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
-                    fn (): View => view('filament.partials.locale-switcher'),
-                )
-                ->navigationGroups($this->getNavigationGroups())
-                ->userMenuItems($this->getUserMenuItems())
-                ->widgets($this->getWidgets())
-                ->middleware($this->getMiddlewares())
-                ->authMiddleware($this->getAuthMiddlewares())
-        );
+        $panel
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->pages([Dashboard::class])
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+        ;
     }
 
-    private function configureTheme(Panel $panel): Panel
+    private function configureTheme(Panel $panel): void
     {
-        if ($this->hasThemeAssets() === false) {
-            return $panel;
-        }
-
-        return $panel->viteTheme('resources/css/filament/console/theme.css');
-    }
-
-    private function hasThemeAssets(): bool
-    {
-        if (app()->runningUnitTests()) {
-            return false;
-        }
-
         /** @var Vite $vite */
         $vite = app(Vite::class);
 
-        return $vite->isRunningHot() || is_file(public_path('build/manifest.json'));
+        $hasThemeAssets = ! app()->runningUnitTests() &&
+            ($vite->isRunningHot() || is_file(public_path('build/manifest.json')));
+
+        if (! $hasThemeAssets) {
+            return;
+        }
+
+        $panel->viteTheme('resources/css/filament/console/theme.css');
     }
 
-    private function configureDiscovery(Panel $panel): Panel
+    private function configureBasePanel(Panel $panel): void
     {
-        return $panel
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+        $panel
+            ->default()
+            ->id('console')
+            ->path('console')
+            ->login()
+            ->colors(['primary' => Color::Emerald])
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn (): View => view('filament.partials.locale-switcher'),
+            )
+            ->navigationGroups($this->getNavigationGroups())
+            ->userMenuItems($this->getUserMenuItems())
+            ->widgets($this->getWidgets())
+            ->middleware($this->getMiddlewares())
+            ->authMiddleware($this->getAuthMiddlewares())
         ;
     }
 
@@ -106,17 +99,6 @@ class ConsolePanelProvider extends PanelProvider
             NavigationGroup::make()
                 ->label(fn (): string => Localization::translate('navigation.groups.management'))
                 ->collapsible(),
-        ];
-    }
-
-    /**
-     * @return array<class-string<Widget>>
-     */
-    private function getWidgets(): array
-    {
-        return [
-            AccountWidget::class,
-            FilamentInfoWidget::class,
         ];
     }
 
@@ -143,6 +125,17 @@ class ConsolePanelProvider extends PanelProvider
             ->url(fn (): string => route('locale.switch', ['locale' => $locale]))
             ->postToUrl()
         ;
+    }
+
+    /**
+     * @return array<class-string<Widget>>
+     */
+    private function getWidgets(): array
+    {
+        return [
+            AccountWidget::class,
+            FilamentInfoWidget::class,
+        ];
     }
 
     /**

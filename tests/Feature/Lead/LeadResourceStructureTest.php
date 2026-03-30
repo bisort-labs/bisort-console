@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Filament\Resources\Leads\LeadResource;
+use App\Filament\Resources\Leads\Pages\CreateLead;
 use App\Filament\Resources\Leads\Pages\EditLead;
 use App\Filament\Resources\Leads\Pages\ListLeads;
 use App\Models\Lead;
@@ -13,6 +14,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\BaseFilter;
@@ -23,7 +25,21 @@ beforeEach(function (): void {
 });
 
 it('configures the lead form through the resource', function (): void {
-    $schema = LeadResource::form(new Schema);
+    $schema = LeadResource::form(new Schema(new CreateLead));
+
+    $sections = $schema->getComponents();
+
+    $sectionHeadings = array_map(static function (mixed $section): string {
+        if ($section instanceof Section) {
+            $heading = $section->getHeading();
+
+            if (is_string($heading)) {
+                return $heading;
+            }
+        }
+
+        throw new RuntimeException('Expected lead form components to be sections with string headings.');
+    }, $sections);
 
     $componentNames = array_map(static function (mixed $component): string {
         if ($component instanceof TextInput || $component instanceof Select) {
@@ -31,22 +47,33 @@ it('configures the lead form through the resource', function (): void {
         }
 
         throw new RuntimeException('Expected lead form components to be text inputs or selects.');
-    }, $schema->getComponents());
+    }, array_merge(...array_map(static function (mixed $section): array {
+        if ($section instanceof Section) {
+            return $section->getChildComponents();
+        }
+
+        throw new RuntimeException('Expected lead form schema to contain section components.');
+    }, $sections)));
 
     expect($schema)->toBeInstanceOf(Schema::class)
+        ->and($sectionHeadings)->toBe([
+            __('common.sections.overview'),
+            __('common.sections.lead_details'),
+            __('common.sections.address'),
+        ])
         ->and($componentNames)->toBe([
             'name',
             'email',
             'company',
+            'phone',
+            'source',
+            'status',
+            'owner_id',
             'street',
             'city',
             'state',
             'zip',
             'country',
-            'phone',
-            'source',
-            'status',
-            'owner_id',
         ])
     ;
 });

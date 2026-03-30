@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Override;
 
@@ -29,7 +30,7 @@ use Override;
 ])]
 class ActionLog extends Model
 {
-    use HasTimestamps;
+    use HasTimestamps, SoftDeletes;
 
     /**
      * @return MorphTo<Model, $this>
