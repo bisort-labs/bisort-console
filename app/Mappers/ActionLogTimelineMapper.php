@@ -26,6 +26,7 @@ class ActionLogTimelineMapper
             ->values()
             ->map(
                 static fn (ActionLog $actionLog): ActionLogDTO => new ActionLogDTO(
+                    id: $actionLog->id,
                     title: Str::ucfirst($actionLog->title ?? Localization::translate('messages.timeline.untitled')),
                     body: $actionLog->body ?? Localization::translate('messages.timeline.no_body_given'),
                     happenedAt: $actionLog->happened_at->toString(),

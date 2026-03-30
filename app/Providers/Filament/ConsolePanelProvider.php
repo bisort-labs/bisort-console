@@ -45,6 +45,8 @@ class ConsolePanelProvider extends PanelProvider
     private function configureDiscovery(Panel $panel): void
     {
         $panel
+            ->id('console')
+            ->path('console')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([Dashboard::class])
@@ -71,8 +73,6 @@ class ConsolePanelProvider extends PanelProvider
     {
         $panel
             ->default()
-            ->id('console')
-            ->path('console')
             ->login()
             ->colors(['primary' => Color::Emerald])
             ->renderHook(

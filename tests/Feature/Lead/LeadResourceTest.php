@@ -204,6 +204,90 @@ it('allows an authenticated user to add a note from the lead view page', functio
     ]);
 });
 
+it('allows an authenticated user to edit an action log from the lead view page', function (): void {
+    $user = User::factory()->create();
+
+    $lead = Lead::query()->create([
+        'name' => 'Northwind Prospect',
+        'email' => 'northwind@example.com',
+        'source' => LeadSource::Referral->value,
+        'status' => LeadStatus::New->value,
+    ]);
+
+    $actionLog = $lead->actionLogs()->create([
+        'type' => ActionLogType::Note,
+        'title' => 'Discovery call',
+        'body' => 'Discuss budget on the first call.',
+        'actor_id' => $user->getKey(),
+    ]);
+
+    actingAs($user);
+
+    livewire(ViewLead::class, ['record' => $lead->getKey()])
+        ->callAction(
+            'editActionLog',
+            [
+                'title' => 'Discovery call moved',
+                'body' => 'Rescheduled to Thursday afternoon.',
+            ],
+            [
+                'actionLog' => $actionLog->getKey(),
+            ],
+        )
+        ->assertHasNoFormErrors()
+        ->assertNotified()
+    ;
+
+    assertDatabaseHas(ActionLog::class, [
+        'id' => $actionLog->getKey(),
+        'type' => ActionLogType::Note->value,
+        'title' => 'Discovery call moved',
+        'body' => 'Rescheduled to Thursday afternoon.',
+        'actionable_type' => Lead::class,
+        'actionable_id' => $lead->getKey(),
+        'actor_id' => $user->getKey(),
+    ]);
+});
+
+it('allows an authenticated user to delete an action log from the lead view page', function (): void {
+    $user = User::factory()->create();
+
+    $lead = Lead::query()->create([
+        'name' => 'Northwind Prospect',
+        'email' => 'northwind@example.com',
+        'source' => LeadSource::Referral->value,
+        'status' => LeadStatus::New->value,
+    ]);
+
+    $actionLog = $lead->actionLogs()->create([
+        'type' => ActionLogType::Note,
+        'title' => 'Discovery call',
+        'body' => 'Discuss budget on the first call.',
+        'actor_id' => $user->getKey(),
+    ]);
+
+    actingAs($user);
+
+    livewire(ViewLead::class, ['record' => $lead->getKey()])
+        ->callAction(
+            'deleteActionLog',
+            [],
+            [
+                'actionLog' => $actionLog->getKey(),
+            ],
+        )
+        ->assertNotified()
+    ;
+
+    $deletedActionLog = ActionLog::withTrashed()
+        ->whereKey($actionLog->getKey())
+        ->firstOrFail();
+
+    expect(ActionLog::query()->find($actionLog->getKey()))->toBeNull()
+        ->and($deletedActionLog->trashed())->toBeTrue()
+    ;
+});
+
 it('renders translated lead UI in german', function (): void {
     $user = User::factory()->create();
 

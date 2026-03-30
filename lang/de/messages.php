@@ -8,11 +8,14 @@ return [
     ],
     'notifications' => [
         'note_added' => 'Notiz hinzugefügt',
+        'action_log_updated' => 'Zeitachsen-Eintrag aktualisiert',
+        'action_log_deleted' => 'Zeitachsen-Eintrag gelöscht',
     ],
     'timeline' => [
         'untitled' => 'Ohne Titel',
         'no_body_given' => 'Es wurde kein Inhalt angegeben.',
         'no_actions_yet' => 'Noch keine Aktionen vorhanden.',
+        'delete_action_log_confirmation' => 'Möchtest du diesen Zeitachsen-Eintrag wirklich löschen?',
         'system' => 'System',
     ],
 ];

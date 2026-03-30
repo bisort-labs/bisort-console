@@ -7,6 +7,7 @@ namespace App\DTOs\ActionLog;
 readonly class ActionLogDTO
 {
     public function __construct(
+        public int $id,
         public string $title,
         public string $body,
         public string $happenedAt,

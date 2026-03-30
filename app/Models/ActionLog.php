@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Override;
 
 /**
+ * @property int $id
  * @property string|null $body
  * @property Carbon $happened_at
  * @property string|null $title

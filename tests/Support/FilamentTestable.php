@@ -12,13 +12,13 @@ use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Traversable;
 
-final class FilamentTestable
+final readonly class FilamentTestable
 {
     /**
      * @param  Testable<Component>  $testable
      */
     public function __construct(
-        private readonly Testable $testable,
+        private Testable $testable,
     ) {}
 
     /**
@@ -105,11 +105,12 @@ final class FilamentTestable
     }
 
     /**
+     * @param  array<array-key, mixed>  $data
      * @param  array<array-key, mixed>  $arguments
      */
-    public function callAction(string $name, array $arguments = []): self
+    public function callAction(string $name, array $data = [], array $arguments = []): self
     {
-        $this->testable->__call('callAction', [$name, $arguments]);
+        $this->testable->__call('callAction', [$name, $data, $arguments]);
 
         return $this;
     }
