@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'validation' => [
         'email_address_in_use' => 'Diese E-Mail-Adresse wird bereits verwendet.',
+        'lost_reason_required' => 'Ein Verlustgrund ist erforderlich, wenn ein Deal als verloren markiert ist.',
     ],
     'notifications' => [
         'note_added' => 'Notiz hinzugefügt',

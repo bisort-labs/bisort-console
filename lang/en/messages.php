@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'validation' => [
         'email_address_in_use' => 'Email address is already in use.',
+        'lost_reason_required' => 'Lost reason is required when a deal is marked as lost.',
     ],
     'notifications' => [
         'note_added' => 'Note added',

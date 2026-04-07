@@ -1,7 +1,7 @@
 <div class="space-y-3">
     @forelse ($actions as $action)
         <div
-            wire:key="lead-action-log-{{ $action->id }}"
+            wire:key="action-log-{{ $action->id }}"
             class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
         >
             <div class="flex items-start justify-between gap-4">

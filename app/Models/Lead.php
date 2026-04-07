@@ -6,11 +6,14 @@ namespace App\Models;
 
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
+use Database\Factories\LeadFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
@@ -36,7 +39,16 @@ use Override;
 ])]
 class Lead extends Model
 {
-    use HasTimestamps, SoftDeletes;
+    /** @use HasFactory<LeadFactory> */
+    use HasFactory, HasTimestamps, SoftDeletes;
+
+    /**
+     * @return HasMany<Deal, $this>
+     */
+    public function deals(): HasMany
+    {
+        return $this->hasMany(Deal::class);
+    }
 
     /**
      * @return BelongsTo<User, $this>
