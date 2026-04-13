@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Support\Localization;
+use App\Services\Localization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 

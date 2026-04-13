@@ -7,11 +7,13 @@ use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Filament\Resources\Leads\LeadResource;
 use App\Filament\Resources\Leads\Pages\CreateLead;
+use App\Filament\Resources\Leads\Pages\EditLead;
 use App\Filament\Resources\Leads\Pages\ListLeads;
 use App\Filament\Resources\Leads\Pages\ViewLead;
 use App\Models\ActionLog;
 use App\Models\Lead;
 use App\Models\User;
+use App\Services\Localization;
 use Filament\Facades\Filament;
 
 use function Pest\Laravel\actingAs;
@@ -145,6 +147,107 @@ it('allows an authenticated user to access the edit page', function (): void {
         ->assertSeeText('Email address')
         ->assertSeeText('Owner')
     ;
+});
+
+it('logs lead detail updates as a single system timeline entry', function (): void {
+    $user = User::factory()->create(['name' => 'Morgan Lee']);
+    $owner = User::factory()->create(['name' => 'Jamie Fox']);
+
+    $lead = Lead::query()->create([
+        'name' => 'Northwind Prospect',
+        'email' => 'northwind@example.com',
+        'company' => 'Northwind GmbH',
+        'street' => 'Unter den Linden 1',
+        'city' => 'Berlin',
+        'state' => 'Berlin',
+        'zip' => '10117',
+        'country' => 'Germany',
+        'phone' => '+49 30 123456',
+        'source' => LeadSource::ColdOutreach->value,
+        'status' => LeadStatus::Contacted->value,
+    ]);
+
+    actingAs($user);
+
+    livewire(EditLead::class, ['record' => $lead->getKey()])
+        ->fillForm([
+            'name' => 'Northwind Qualified Prospect',
+            'email' => 'northwind@example.com',
+            'company' => 'Northwind GmbH',
+            'street' => 'Unter den Linden 1',
+            'city' => 'Berlin',
+            'state' => 'Berlin',
+            'zip' => '10117',
+            'country' => 'Germany',
+            'phone' => '+49 30 987654',
+            'source' => LeadSource::Referral->value,
+            'status' => LeadStatus::Qualified->value,
+            'owner_id' => $owner->getKey(),
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified()
+    ;
+
+    $actionLog = $lead->refresh()->actionLogs->sortByDesc('id')->first();
+
+    if (! $actionLog instanceof ActionLog) {
+        throw new RuntimeException('Expected a lead action log to be created.');
+    }
+
+    expect($actionLog->type)->toBe(ActionLogType::System)
+        ->and($actionLog->title)->toBe('Lead details updated')
+        ->and($actionLog->actor_id)->toBe($user->getKey())
+        ->and($actionLog->body)->toBe(implode("\n", [
+            'Name: Northwind Prospect -> Northwind Qualified Prospect',
+            'Phone: +49 30 123456 -> +49 30 987654',
+            'Source: Cold outreach -> Referral',
+            'Status: Contacted -> Qualified',
+            'Owner: - -> Jamie Fox',
+        ]))
+    ;
+});
+
+it('does not create a lead system timeline entry when nothing changed', function (): void {
+    $user = User::factory()->create();
+
+    $lead = Lead::query()->create([
+        'name' => 'Northwind Prospect',
+        'email' => 'northwind@example.com',
+        'company' => 'Northwind GmbH',
+        'street' => 'Unter den Linden 1',
+        'city' => 'Berlin',
+        'state' => 'Berlin',
+        'zip' => '10117',
+        'country' => 'Germany',
+        'phone' => '+49 30 123456',
+        'source' => LeadSource::Referral->value,
+        'status' => LeadStatus::Qualified->value,
+    ]);
+
+    actingAs($user);
+
+    livewire(EditLead::class, ['record' => $lead->getKey()])
+        ->fillForm([
+            'name' => 'Northwind Prospect',
+            'email' => 'northwind@example.com',
+            'company' => 'Northwind GmbH',
+            'street' => 'Unter den Linden 1',
+            'city' => 'Berlin',
+            'state' => 'Berlin',
+            'zip' => '10117',
+            'country' => 'Germany',
+            'phone' => '+49 30 123456',
+            'source' => LeadSource::Referral->value,
+            'status' => LeadStatus::Qualified->value,
+            'owner_id' => null,
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified()
+    ;
+
+    expect($lead->refresh()->actionLogs)->toHaveCount(0);
 });
 
 it('allows an authenticated user to view a soft deleted lead with enum labels', function (): void {
@@ -286,6 +389,80 @@ it('allows an authenticated user to delete an action log from the lead view page
     expect(ActionLog::query()->find($actionLog->getKey()))->toBeNull()
         ->and($deletedActionLog->trashed())->toBeTrue()
     ;
+});
+
+it('shows lead system timeline entries as read only and rejects managing them', function (): void {
+    $user = User::factory()->create();
+
+    $lead = Lead::query()->create([
+        'name' => 'Northwind Prospect',
+        'email' => 'northwind@example.com',
+        'source' => LeadSource::Referral->value,
+        'status' => LeadStatus::New->value,
+    ]);
+
+    $actionLog = $lead->actionLogs()->create([
+        'type' => ActionLogType::System,
+        'title' => 'Lead details updated',
+        'body' => 'Status: New -> Qualified',
+    ]);
+    $actionLogKey = $actionLog->getKey();
+
+    if (! is_int($actionLogKey) && ! is_string($actionLogKey)) {
+        throw new RuntimeException('Expected the lead action log key to be a string or int.');
+    }
+
+    actingAs($user);
+
+    get(LeadResource::getUrl('view', ['record' => $lead]))
+        ->assertOk()
+        ->assertSeeText('Lead details updated')
+        ->assertDontSee("mountAction('editActionLog', { actionLog: {$actionLogKey} })", false)
+        ->assertDontSee("mountAction('deleteActionLog', { actionLog: {$actionLogKey} })", false)
+    ;
+
+    livewire(ViewLead::class, ['record' => $lead->getKey()])
+        ->callAction(
+            'editActionLog',
+            [
+                'title' => 'Blocked update',
+                'body' => 'This should not be allowed.',
+            ],
+            [
+                'actionLog' => $actionLog->getKey(),
+            ],
+        )
+        ->assertNotified(Localization::translate('messages.notifications.action_log_not_modified'))
+    ;
+
+    assertDatabaseHas(ActionLog::class, [
+        'id' => $actionLog->getKey(),
+        'type' => ActionLogType::System->value,
+        'title' => 'Lead details updated',
+        'body' => 'Status: New -> Qualified',
+        'actionable_type' => Lead::class,
+        'actionable_id' => $lead->getKey(),
+    ]);
+
+    livewire(ViewLead::class, ['record' => $lead->getKey()])
+        ->callAction(
+            'deleteActionLog',
+            [],
+            [
+                'actionLog' => $actionLog->getKey(),
+            ],
+        )
+        ->assertNotified(Localization::translate('messages.notifications.action_log_not_modified'))
+    ;
+
+    assertDatabaseHas(ActionLog::class, [
+        'id' => $actionLog->getKey(),
+        'type' => ActionLogType::System->value,
+        'title' => 'Lead details updated',
+        'body' => 'Status: New -> Qualified',
+        'actionable_type' => Lead::class,
+        'actionable_id' => $lead->getKey(),
+    ]);
 });
 
 it('renders translated lead UI in german', function (): void {

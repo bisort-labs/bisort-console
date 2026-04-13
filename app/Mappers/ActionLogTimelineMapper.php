@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Mappers;
 
 use App\DTOs\ActionLog\ActionLogDTO;
+use App\Enums\ActionLogType;
 use App\Models\ActionLog;
-use App\Support\Localization;
+use App\Services\Localization;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -31,6 +32,7 @@ class ActionLogTimelineMapper
                     body: $actionLog->body ?? Localization::translate('messages.timeline.no_body_given'),
                     happenedAt: $actionLog->happened_at->toString(),
                     actorName: $actionLog->actor->name ?? Localization::translate('messages.timeline.system'),
+                    canManage: $actionLog->type !== ActionLogType::System,
                 )
             )
         ;

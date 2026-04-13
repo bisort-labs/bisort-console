@@ -12,6 +12,7 @@ readonly class ActionLogDTO
         public string $body,
         public string $happenedAt,
         public string $actorName,
+        public bool $canManage,
     ) {
     }
 }

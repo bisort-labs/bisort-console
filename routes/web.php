@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\SwitchLocaleController;
-use App\Support\Localization;
+use App\Services\Localization;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 

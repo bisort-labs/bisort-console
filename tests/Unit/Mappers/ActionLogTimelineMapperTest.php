@@ -27,7 +27,7 @@ it('builds timeline actions from action logs', function (): void {
 
     $recentLog = (new ActionLog)->setRawAttributes([
         'id' => 2,
-        'type' => ActionLogType::Note->value,
+        'type' => ActionLogType::System->value,
         'title' => 'follow up scheduled',
         'body' => null,
         'happened_at' => '2026-03-27 09:00:00',
@@ -52,11 +52,13 @@ it('builds timeline actions from action logs', function (): void {
         ->and($firstTimelineAction->body)->toBe('No body was given')
         ->and($firstTimelineAction->happenedAt)->toBe(Carbon::parse('2026-03-27 09:00:00')->toString())
         ->and($firstTimelineAction->actorName)->toBe('System')
+        ->and($firstTimelineAction->canManage)->toBeFalse()
         ->and($lastTimelineAction)->toBeInstanceOf(ActionLogDTO::class)
         ->and($lastTimelineAction->id)->toBe(1)
         ->and($lastTimelineAction->title)->toBe('Untitled')
         ->and($lastTimelineAction->body)->toBe('Sent pricing summary')
         ->and($lastTimelineAction->happenedAt)->toBe(Carbon::parse('2026-03-26 08:00:00')->toString())
         ->and($lastTimelineAction->actorName)->toBe('Morgan Lee')
+        ->and($lastTimelineAction->canManage)->toBeTrue()
     ;
 });

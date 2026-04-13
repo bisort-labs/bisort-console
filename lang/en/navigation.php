@@ -12,6 +12,10 @@ return [
             'singular' => 'client project',
             'plural' => 'client projects',
         ],
+        'deal' => [
+            'singular' => 'deal',
+            'plural' => 'deals',
+        ],
         'lead' => [
             'singular' => 'lead',
             'plural' => 'leads',

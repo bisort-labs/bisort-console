@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Filament\Console\Pages\Dashboard;
 use App\Filament\Resources\ClientProjects\ClientProjectResource;
+use App\Filament\Resources\Deals\DealResource;
 use App\Filament\Resources\Leads\LeadResource;
 use Filament\Support\Icons\Heroicon;
 
@@ -12,6 +13,7 @@ it('uses english navigation groups for the console sidebar', function (): void {
 
     expect(Dashboard::getNavigationGroup())->toBe('Overview')
         ->and(ClientProjectResource::getNavigationGroup())->toBe('Management')
+        ->and(DealResource::getNavigationGroup())->toBe('Management')
         ->and(LeadResource::getNavigationGroup())->toBe('Management')
     ;
 });
@@ -21,6 +23,7 @@ it('uses german navigation groups for the console sidebar', function (): void {
 
     expect(Dashboard::getNavigationGroup())->toBe('Übersicht')
         ->and(ClientProjectResource::getNavigationGroup())->toBe('Verwaltung')
+        ->and(DealResource::getNavigationGroup())->toBe('Verwaltung')
         ->and(LeadResource::getNavigationGroup())->toBe('Verwaltung')
     ;
 });
@@ -28,20 +31,24 @@ it('uses german navigation groups for the console sidebar', function (): void {
 it('uses distinct navigation icons for the console sidebar', function (): void {
     expect(Dashboard::getNavigationIcon())->toBe(Heroicon::OutlinedHomeModern)
         ->and(ClientProjectResource::getNavigationIcon())->toBe(Heroicon::OutlinedBriefcase)
+        ->and(DealResource::getNavigationIcon())->toBe(Heroicon::OutlinedBanknotes)
         ->and(LeadResource::getNavigationIcon())->toBe(Heroicon::OutlinedUserGroup)
     ;
 });
 
-it('sorts leads before client projects in the management navigation group', function (): void {
+it('sorts leads, client projects, and deals in the management navigation group', function (): void {
     $leadNavigationSort = LeadResource::getNavigationSort();
     $clientProjectNavigationSort = ClientProjectResource::getNavigationSort();
+    $dealNavigationSort = DealResource::getNavigationSort();
 
-    if ($leadNavigationSort === null || $clientProjectNavigationSort === null) {
-        throw new RuntimeException('Navigation sort must be configured for both resources.');
+    if ($leadNavigationSort === null || $clientProjectNavigationSort === null || $dealNavigationSort === null) {
+        throw new RuntimeException('Navigation sort must be configured for the management resources.');
     }
 
     expect($leadNavigationSort)->toBeLessThan($clientProjectNavigationSort)
+        ->and($clientProjectNavigationSort)->toBeLessThan($dealNavigationSort)
         ->and($leadNavigationSort)->toBe(10)
         ->and($clientProjectNavigationSort)->toBe(20)
+        ->and($dealNavigationSort)->toBe(30)
     ;
 });
