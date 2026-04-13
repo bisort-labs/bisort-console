@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Deals;
+namespace App\Services\Deal;
 
 use InvalidArgumentException;
+use Safe\Exceptions\PcreException;
 use function Safe\preg_match;
 
 class DealMoney
@@ -37,6 +38,9 @@ class DealMoney
         );
     }
 
+    /**
+     * @throws PcreException
+     */
     private static function normalizeAmount(float|string $amount): string
     {
         if (is_float($amount)) {

@@ -14,12 +14,12 @@
                         {{ $action->actorName }}
                     </div>
 
-                    <div class="mt-3 whitespace-pre-line break-words text-sm text-gray-600 dark:text-gray-300">
+                    <div class="mt-3 whitespace-pre-line wrap-break-word text-sm text-gray-600 dark:text-gray-300">
                         {{ $action->body }}
                     </div>
                 </div>
 
-                <div class="flex shrink-0 flex-col items-end gap-2">
+                <div class="flex flex-row-reverse items-center gap-4">
                     @if ($action->canManage)
                         <div class="flex items-center gap-1">
                             <x-filament::icon-button

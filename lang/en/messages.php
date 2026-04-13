@@ -11,6 +11,7 @@ return [
         'note_added' => 'Note added',
         'action_log_updated' => 'Timeline entry updated',
         'action_log_deleted' => 'Timeline entry deleted',
+        'action_log_not_modified' => 'Timeline entry cannot be modified',
     ],
     'timeline' => [
         'untitled' => 'Untitled',

@@ -11,6 +11,7 @@ return [
         'note_added' => 'Notiz hinzugefügt',
         'action_log_updated' => 'Zeitachsen-Eintrag aktualisiert',
         'action_log_deleted' => 'Zeitachsen-Eintrag gelöscht',
+        'action_log_not_modified' => 'Zeitachsen-Eintrag kann nicht bearbeitet werden',
     ],
     'timeline' => [
         'untitled' => 'Ohne Titel',

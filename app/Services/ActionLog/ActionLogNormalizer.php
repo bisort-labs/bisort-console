@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Support\ActionLogs;
+namespace App\Services\ActionLog;
 
 use App\Models\ActionLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class ActionLogNormalizer
+readonly class ActionLogNormalizer
 {
     public function modelKey(Model $model): int|string
     {
@@ -18,13 +18,13 @@ class ActionLogNormalizer
             return $key;
         }
 
-        throw (new ModelNotFoundException())->setModel(ActionLog::class);
+        throw new ModelNotFoundException()->setModel(ActionLog::class);
     }
 
     public function normalizeActionLogId(int|string|null $actionLogId): int
     {
         if (! is_int($actionLogId) && (! is_string($actionLogId) || ! ctype_digit($actionLogId))) {
-            throw (new ModelNotFoundException())->setModel(ActionLog::class);
+            throw new ModelNotFoundException()->setModel(ActionLog::class);
         }
 
         return is_string($actionLogId) ? (int) $actionLogId : $actionLogId;

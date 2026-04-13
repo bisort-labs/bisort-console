@@ -12,7 +12,7 @@ use App\Filament\Resources\Deals\Schemas\DealForm;
 use App\Filament\Resources\Deals\Schemas\DealInfolist;
 use App\Filament\Resources\Deals\Tables\DealsTable;
 use App\Models\Deal;
-use App\Support\Localization;
+use App\Services\Localization;
 use BackedEnum;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\RelationManagers\RelationGroup;

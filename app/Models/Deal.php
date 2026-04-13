@@ -18,12 +18,25 @@ use Illuminate\Support\Carbon;
 use Override;
 
 /**
+ * @property int $id
+ * @property int $lead_id
+ * @property int|null $project_id
+ * @property string $title
  * @property Carbon|null $close_date
+ * @property string $currency
+ * @property Carbon|null $created_at
+ * @property Carbon|null $deleted_at
+ * @property int $expected_value_cents
+ * @property string|null $lost_reason
+ * @property string|null $notes
+ * @property int|null $owner_id
+ * @property int|null $probability
  * @property DealStage $stage
+ * @property Carbon|null $updated_at
  * @property EloquentCollection<int, ActionLog> $actionLogs
+ * @property ClientProject|null $project
  * @property Lead $lead
  * @property User|null $owner
- * @property ClientProject|null $project
  */
 #[Fillable([
     'lead_id',

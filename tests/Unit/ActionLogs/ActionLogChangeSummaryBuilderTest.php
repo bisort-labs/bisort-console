@@ -9,7 +9,7 @@ use App\Models\ClientProject;
 use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\User;
-use App\Support\ActionLogs\ActionLogChangeSummaryBuilder;
+use App\Services\ActionLog\ActionLogChangeSummaryBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

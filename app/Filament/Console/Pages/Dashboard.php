@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Console\Pages;
 
-use App\Support\Localization;
+use App\Services\Localization;
 use BackedEnum;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Support\Icons\Heroicon;

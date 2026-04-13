@@ -8,7 +8,7 @@ use App\Enums\DealStage;
 use App\Filament\Resources\Leads\LeadResource;
 use App\Mappers\ActionLogTimelineMapper;
 use App\Models\Deal;
-use App\Support\Localization;
+use App\Services\Localization;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
 use Filament\Schemas\Components\Section;
@@ -28,6 +28,7 @@ class DealInfolist
     private static function getOverviewEntries(): Section
     {
         return Section::make(Localization::translate('common.sections.overview'))
+            ->columnSpanFull()
             ->schema([
                 self::getTitleEntry(),
                 self::getLeadEntry(),
@@ -144,7 +145,9 @@ class DealInfolist
         return TextEntry::make('project.name')
             ->label(Localization::translate('fields.project'))
             ->placeholder(Localization::translate('common.placeholder'))
-            ->visible(static fn (Deal $record): bool => self::shouldShowProject($record))
+            ->visible(
+                static fn (Deal $record): bool => $record->stage === DealStage::Won || filled($record->project_id)
+            )
         ;
     }
 
@@ -153,7 +156,9 @@ class DealInfolist
         return TextEntry::make('lost_reason')
             ->label(Localization::translate('fields.lost_reason'))
             ->placeholder(Localization::translate('common.placeholder'))
-            ->visible(static fn (Deal $record): bool => self::shouldShowLostReason($record))
+            ->visible(
+                static fn (Deal $record): bool => $record->stage === DealStage::Lost || filled($record->lost_reason)
+            )
         ;
     }
 
@@ -164,15 +169,5 @@ class DealInfolist
             ->placeholder(Localization::translate('common.placeholder'))
             ->columnSpanFull()
         ;
-    }
-
-    private static function shouldShowLostReason(Deal $record): bool
-    {
-        return $record->stage === DealStage::Lost || filled($record->lost_reason);
-    }
-
-    private static function shouldShowProject(Deal $record): bool
-    {
-        return $record->stage === DealStage::Won || filled($record->project_id);
     }
 }

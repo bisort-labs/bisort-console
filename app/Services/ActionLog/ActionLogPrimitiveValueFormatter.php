@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Support\ActionLogs;
+namespace App\Services\ActionLog;
 
-use App\Support\Deals\DealMoney;
-use App\Support\Localization;
+use App\Services\Deal\DealMoney;
+use App\Services\Localization;
 use BackedEnum;
 use DateTimeInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-class ActionLogPrimitiveValueFormatter
+readonly class ActionLogPrimitiveValueFormatter
 {
     /**
-     * @param  array<string, BackedEnum|DateTimeInterface|float|int|string|null>  $snapshot
+     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $snapshot
      */
     public function format(
         string $field,
-        BackedEnum|DateTimeInterface|float|int|string|null $value,
+        BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
         array $snapshot,
     ): string {
         return match ($field) {
@@ -30,14 +30,14 @@ class ActionLogPrimitiveValueFormatter
         };
     }
 
-    private function formatCurrency(BackedEnum|DateTimeInterface|float|int|string|null $value): string
+    private function formatCurrency(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         return is_scalar($value) && filled($value)
             ? strtoupper(strval($value))
             : Localization::translate('common.placeholder');
     }
 
-    private function formatDate(BackedEnum|DateTimeInterface|float|int|string|null $value): string
+    private function formatDate(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         if ($value instanceof DateTimeInterface) {
             return Carbon::instance($value)->toDateString();
@@ -49,10 +49,10 @@ class ActionLogPrimitiveValueFormatter
     }
 
     /**
-     * @param  array<string, BackedEnum|DateTimeInterface|float|int|string|null>  $snapshot
+     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $snapshot
      */
     private function formatMoney(
-        BackedEnum|DateTimeInterface|float|int|string|null $value,
+        BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
         array $snapshot,
     ): string {
         if (! is_numeric($value)) {
@@ -64,14 +64,14 @@ class ActionLogPrimitiveValueFormatter
         return "{$currency} " . DealMoney::centsToAmount((int) $value);
     }
 
-    private function formatProbability(BackedEnum|DateTimeInterface|float|int|string|null $value): string
+    private function formatProbability(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         return is_numeric($value)
             ? sprintf('%d%%', (int) $value)
             : Localization::translate('common.placeholder');
     }
 
-    private function formatText(BackedEnum|DateTimeInterface|float|int|string|null $value): string
+    private function formatText(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         if (! is_scalar($value) || blank($value)) {
             return Localization::translate('common.placeholder');

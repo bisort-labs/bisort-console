@@ -13,8 +13,8 @@ use App\Filament\Resources\Leads\Pages\ViewLead;
 use App\Models\ActionLog;
 use App\Models\Lead;
 use App\Models\User;
+use App\Services\Localization;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
@@ -421,7 +421,7 @@ it('shows lead system timeline entries as read only and rejects managing them', 
         ->assertDontSee("mountAction('deleteActionLog', { actionLog: {$actionLogKey} })", false)
     ;
 
-    expect(fn (): mixed => livewire(ViewLead::class, ['record' => $lead->getKey()])
+    livewire(ViewLead::class, ['record' => $lead->getKey()])
         ->callAction(
             'editActionLog',
             [
@@ -431,16 +431,38 @@ it('shows lead system timeline entries as read only and rejects managing them', 
             [
                 'actionLog' => $actionLog->getKey(),
             ],
-        ))->toThrow(ModelNotFoundException::class);
+        )
+        ->assertNotified(Localization::translate('messages.notifications.action_log_not_modified'))
+    ;
 
-    expect(fn (): mixed => livewire(ViewLead::class, ['record' => $lead->getKey()])
+    assertDatabaseHas(ActionLog::class, [
+        'id' => $actionLog->getKey(),
+        'type' => ActionLogType::System->value,
+        'title' => 'Lead details updated',
+        'body' => 'Status: New -> Qualified',
+        'actionable_type' => Lead::class,
+        'actionable_id' => $lead->getKey(),
+    ]);
+
+    livewire(ViewLead::class, ['record' => $lead->getKey()])
         ->callAction(
             'deleteActionLog',
             [],
             [
                 'actionLog' => $actionLog->getKey(),
             ],
-        ))->toThrow(ModelNotFoundException::class);
+        )
+        ->assertNotified(Localization::translate('messages.notifications.action_log_not_modified'))
+    ;
+
+    assertDatabaseHas(ActionLog::class, [
+        'id' => $actionLog->getKey(),
+        'type' => ActionLogType::System->value,
+        'title' => 'Lead details updated',
+        'body' => 'Status: New -> Qualified',
+        'actionable_type' => Lead::class,
+        'actionable_id' => $lead->getKey(),
+    ]);
 });
 
 it('renders translated lead UI in german', function (): void {

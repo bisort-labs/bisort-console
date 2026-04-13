@@ -6,8 +6,8 @@ namespace App\Filament\Resources\Deals\Schemas;
 
 use App\Enums\DealStage;
 use App\Models\Lead;
-use App\Support\Deals\DealMoney;
-use App\Support\Localization;
+use App\Services\Deal\DealMoney;
+use App\Services\Localization;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -19,6 +19,8 @@ use Filament\Schemas\Schema;
 
 class DealForm
 {
+    private const string EXPECTED_VALUE_REG_EX = '/^\d+(?:[.,]\d{1,2})?$/';
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -30,6 +32,7 @@ class DealForm
     private static function getOverviewFields(): Section
     {
         return Section::make(Localization::translate('common.sections.overview'))
+            ->columnSpanFull()
             ->schema([
                 self::getLeadField(),
                 self::getTitleField(),
@@ -60,9 +63,11 @@ class DealForm
         return Select::make('lead_id')
             ->label(Localization::translate('fields.lead'))
             ->relationship('lead', 'name')
-            ->getOptionLabelFromRecordUsing(static fn (Lead $record): string => filled($record->company)
-                ? "{$record->name} ({$record->company})"
-                : $record->name)
+            ->getOptionLabelFromRecordUsing(
+                static fn (Lead $record): string => filled($record->company)
+                    ? sprintf('%s (%s)', $record->name, $record->company)
+                    : $record->name
+            )
             ->searchable(['name', 'company'])
             ->preload()
             ->required()
@@ -105,7 +110,7 @@ class DealForm
             ->dehydrateStateUsing(static fn (mixed $state): int => DealMoney::amountToCents(
                 is_scalar($state) ? strval($state) : null,
             ))
-            ->rule('regex:/^\d+(?:[.,]\d{1,2})?$/')
+            ->rule('regex:' . self::EXPECTED_VALUE_REG_EX)
         ;
     }
 

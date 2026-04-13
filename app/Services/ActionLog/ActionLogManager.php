@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support\ActionLogs;
+namespace App\Services\ActionLog;
 
 use App\DTOs\ActionLog\ActionLogSummary;
 use App\Enums\ActionLogType;
@@ -12,10 +12,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Auth;
 
-class ActionLogManager
+readonly class ActionLogManager
 {
     public function __construct(
-        private readonly ActionLogNormalizer $normalizer,
+        private ActionLogNormalizer $normalizer,
     ) {
     }
 
@@ -55,10 +55,8 @@ class ActionLogManager
         ;
 
         if (! $actionLog instanceof ActionLog) {
-            throw (new ModelNotFoundException())->setModel(ActionLog::class, [$normalizedActionLogId]);
+            throw new ModelNotFoundException()->setModel(ActionLog::class, [$normalizedActionLogId]);
         }
-
-        $this->ensureManageable($actionLog);
 
         return $actionLog;
     }
@@ -94,7 +92,7 @@ class ActionLogManager
     private function ensureManageable(ActionLog $actionLog): void
     {
         if ($actionLog->type === ActionLogType::System) {
-            throw (new ModelNotFoundException())->setModel(ActionLog::class, [$this->normalizer->modelKey($actionLog)]);
+            throw new ModelNotFoundException()->setModel(ActionLog::class, [$this->normalizer->modelKey($actionLog)]);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace App\Mappers;
 use App\DTOs\ActionLog\ActionLogDTO;
 use App\Enums\ActionLogType;
 use App\Models\ActionLog;
-use App\Support\Localization;
+use App\Services\Localization;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;

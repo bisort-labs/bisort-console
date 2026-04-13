@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Support\ActionLogs;
+namespace App\Services\ActionLog;
 
-use App\Support\Localization;
+use App\Services\Localization;
 use BackedEnum;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 
-class ActionLogRelationValueFormatter
+readonly class ActionLogRelationValueFormatter
 {
     /**
      * @param  class-string<Model>  $modelClass
      */
     public function format(
-        BackedEnum|DateTimeInterface|float|int|string|null $value,
+        BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
         string $modelClass,
     ): string {
         if (! is_numeric($value)) {

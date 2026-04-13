@@ -15,9 +15,9 @@ use App\Models\ClientProject;
 use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\User;
-use App\Support\Deals\DealMoney;
+use App\Services\Deal\DealMoney;
+use App\Services\Localization;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
@@ -229,6 +229,7 @@ it('does not create a deal system timeline entry when nothing changed', function
             'close_date' => '2026-06-15',
             'owner_id' => null,
             'project_id' => null,
+            'lost_reason' => null,
             'notes' => 'Initial scope draft.',
         ])
         ->call('save')
@@ -498,7 +499,7 @@ it('shows deal system timeline entries as read only and rejects managing them', 
         ->assertDontSee("mountAction('deleteActionLog', { actionLog: {$actionLogKey} })", false)
     ;
 
-    expect(fn (): mixed => livewire(ViewDeal::class, ['record' => $deal->getKey()])
+    livewire(ViewDeal::class, ['record' => $deal->getKey()])
         ->callAction(
             'editActionLog',
             [
@@ -508,16 +509,38 @@ it('shows deal system timeline entries as read only and rejects managing them', 
             [
                 'actionLog' => $actionLog->getKey(),
             ],
-        ))->toThrow(ModelNotFoundException::class);
+        )
+        ->assertNotified(Localization::translate('messages.notifications.action_log_not_modified'))
+    ;
 
-    expect(fn (): mixed => livewire(ViewDeal::class, ['record' => $deal->getKey()])
+    assertDatabaseHas(ActionLog::class, [
+        'id' => $actionLog->getKey(),
+        'type' => ActionLogType::System->value,
+        'title' => 'Deal details updated',
+        'body' => 'Stage: New -> Contacted',
+        'actionable_type' => Deal::class,
+        'actionable_id' => $deal->getKey(),
+    ]);
+
+    livewire(ViewDeal::class, ['record' => $deal->getKey()])
         ->callAction(
             'deleteActionLog',
             [],
             [
                 'actionLog' => $actionLog->getKey(),
             ],
-        ))->toThrow(ModelNotFoundException::class);
+        )
+        ->assertNotified(Localization::translate('messages.notifications.action_log_not_modified'))
+    ;
+
+    assertDatabaseHas(ActionLog::class, [
+        'id' => $actionLog->getKey(),
+        'type' => ActionLogType::System->value,
+        'title' => 'Deal details updated',
+        'body' => 'Stage: New -> Contacted',
+        'actionable_type' => Deal::class,
+        'actionable_id' => $deal->getKey(),
+    ]);
 });
 
 it('orders deal timeline actions with the most recent entry first', function (): void {

@@ -4,22 +4,49 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Pages\Concerns;
 
+use App\Enums\ActionLogType;
 use App\Models\ActionLog;
-use App\Support\ActionLogs\ActionLogManager;
-use App\Support\Localization;
+use App\Services\ActionLog\ActionLogManager;
+use App\Services\Localization;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use RuntimeException;
 
 /**
  * @method Model getRecord()
  */
 trait InteractsWithActionLogs
 {
+    public function editActionLogAction(): Action
+    {
+        return Action::make('editActionLog')
+            ->label(Localization::translate('actions.edit_action_log'))
+            ->modalHeading(Localization::translate('actions.edit_action_log'))
+            ->modalSubmitActionLabel(Localization::translate('actions.save_changes'))
+            ->record(fn (array $arguments): ActionLog => app(ActionLogManager::class)->resolveForActionable(
+                $this->getRecord(),
+                filter_var($arguments['actionLog'] ?? null, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE),
+            ))
+            ->fillForm(static fn (ActionLog $record): array => ['title' => $record->title, 'body' => $record->body])
+            ->schema($this->getActionLogSchema())
+            ->action(function (array $data, ActionLog $record): void {
+                if ($record->type === ActionLogType::System) {
+                    $this->sendActionLogNotification('messages.notifications.action_log_not_modified', warning: true);
+                    return;
+                }
+                app(ActionLogManager::class)->update(
+                    $record,
+                    is_scalar($data['title'] ?? null) ? strval($data['title']) : '',
+                    is_scalar($data['body'] ?? null) && filled($data['body']) ? strval($data['body']) : null,
+                );
+                $this->record = $this->getRecord()->refresh();
+                $this->sendActionLogNotification('messages.notifications.action_log_updated');
+            });
+    }
+
     public function deleteActionLogAction(): Action
     {
         return Action::make('deleteActionLog')
@@ -29,77 +56,19 @@ trait InteractsWithActionLogs
             ->modalHeading(Localization::translate('actions.delete_action_log'))
             ->modalDescription(Localization::translate('messages.timeline.delete_action_log_confirmation'))
             ->modalSubmitActionLabel(Localization::translate('actions.delete_action_log'))
-            ->record(fn (array $arguments): ActionLog => $this->actionLogManager()->resolveForActionable(
-                $this->getActionableRecord(),
+            ->record(fn (array $arguments): ActionLog => app(ActionLogManager::class)->resolveForActionable(
+                $this->getRecord(),
                 filter_var($arguments['actionLog'] ?? null, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE),
             ))
             ->action(function (ActionLog $record): void {
-                $this->actionLogManager()->delete($record);
-                $this->refreshActionableRecord();
-                $this->sendActionLogDeletedNotification();
-            })
-        ;
-    }
-
-    public function editActionLogAction(): Action
-    {
-        return Action::make('editActionLog')
-            ->label(Localization::translate('actions.edit_action_log'))
-            ->modalHeading(Localization::translate('actions.edit_action_log'))
-            ->modalSubmitActionLabel(Localization::translate('actions.save_changes'))
-            ->record(fn (array $arguments): ActionLog => $this->actionLogManager()->resolveForActionable(
-                $this->getActionableRecord(),
-                filter_var($arguments['actionLog'] ?? null, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE),
-            ))
-            ->fillForm(static fn (ActionLog $record): array => ['title' => $record->title, 'body' => $record->body])
-            ->schema($this->getActionLogSchema())
-            ->action(function (array $data, ActionLog $record): void {
-                $this->actionLogManager()->update(
-                    $record,
-                    $this->normalizeTitle($data['title'] ?? null),
-                    $this->normalizeBody($data['body'] ?? null),
-                );
-                $this->refreshActionableRecord();
-                $this->sendActionLogUpdatedNotification();
-            })
-        ;
-    }
-
-    protected function actionLogManager(): ActionLogManager
-    {
-        return app(ActionLogManager::class);
-    }
-
-    protected function getAddNoteAction(): Action
-    {
-        return Action::make('addNote')
-            ->label(Localization::translate('actions.add_note'))
-            ->icon('heroicon-o-pencil-square')
-            ->modalHeading(Localization::translate('actions.add_note'))
-            ->modalSubmitActionLabel(Localization::translate('actions.add_note'))
-            ->schema($this->getActionLogSchema())
-            ->action(function (array $data): void {
-                $this->actionLogManager()->createNote(
-                    $this->getActionableRecord(),
-                    $this->normalizeTitle($data['title'] ?? null),
-                    $this->normalizeBody($data['body'] ?? null),
-                    Auth::id(),
-                );
-                $this->refreshActionableRecord();
-                $this->sendNoteAddedNotification();
-            })
-        ;
-    }
-
-    protected function getActionableRecord(): Model
-    {
-        $record = $this->getRecord();
-
-        if (! method_exists($record, 'actionLogs')) {
-            throw new RuntimeException('The current record does not support action logs.');
-        }
-
-        return $record;
+                if ($record->type === ActionLogType::System) {
+                    $this->sendActionLogNotification('messages.notifications.action_log_not_modified', warning: true);
+                    return;
+                }
+                app(ActionLogManager::class)->delete($record);
+                $this->record = $this->getRecord()->refresh();
+                $this->sendActionLogNotification('messages.notifications.action_log_deleted');
+            });
     }
 
     /**
@@ -118,45 +87,36 @@ trait InteractsWithActionLogs
         ];
     }
 
-    protected function normalizeBody(mixed $body): ?string
+    protected function getAddNoteAction(): Action
     {
-        return is_scalar($body) && filled($body) ? strval($body) : null;
+        return Action::make('addNote')
+            ->label(Localization::translate('actions.add_note'))
+            ->icon('heroicon-o-pencil-square')
+            ->modalHeading(Localization::translate('actions.add_note'))
+            ->modalSubmitActionLabel(Localization::translate('actions.add_note'))
+            ->schema($this->getActionLogSchema())
+            ->action(function (array $data): void {
+                app(ActionLogManager::class)->createNote(
+                    $this->getRecord(),
+                    is_scalar($data['title'] ?? null) ? strval($data['title']) : '',
+                    is_scalar($data['body'] ?? null) && filled($data['body']) ? strval($data['body']) : null,
+                    Auth::id(),
+                );
+                $this->record = $this->getRecord()->refresh();
+                $this->sendActionLogNotification('messages.notifications.note_added');
+            });
     }
 
-    protected function normalizeTitle(mixed $title): string
+    protected function sendActionLogNotification(string $translationKey, bool $warning = false): void
     {
-        return is_scalar($title) ? strval($title) : '';
-    }
+        $notification = Notification::make()->title(Localization::translate($translationKey));
 
-    protected function refreshActionableRecord(): void
-    {
-        $this->record = $this->getActionableRecord()->refresh();
-    }
+        if ($warning) {
+            $notification->warning()->send();
 
-    protected function sendActionLogDeletedNotification(): void
-    {
-        Notification::make()
-            ->title(Localization::translate('messages.notifications.action_log_deleted'))
-            ->success()
-            ->send()
-        ;
-    }
+            return;
+        }
 
-    protected function sendActionLogUpdatedNotification(): void
-    {
-        Notification::make()
-            ->title(Localization::translate('messages.notifications.action_log_updated'))
-            ->success()
-            ->send()
-        ;
-    }
-
-    protected function sendNoteAddedNotification(): void
-    {
-        Notification::make()
-            ->title(Localization::translate('messages.notifications.note_added'))
-            ->success()
-            ->send()
-        ;
+        $notification->success()->send();
     }
 }

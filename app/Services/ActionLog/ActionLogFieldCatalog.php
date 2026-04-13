@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Support\ActionLogs;
+namespace App\Services\ActionLog;
 
 use App\Models\Deal;
 use App\Models\Lead;
-use App\Support\Localization;
+use App\Services\Localization;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
-class ActionLogFieldCatalog
+readonly class ActionLogFieldCatalog
 {
-    private const DEAL_TRACKED_FIELDS = [
+    private const array DEAL_TRACKED_FIELDS = [
         'lead_id',
         'project_id',
         'title',
@@ -26,7 +26,7 @@ class ActionLogFieldCatalog
         'owner_id',
     ];
 
-    private const FIELD_LABELS = [
+    private const array FIELD_LABELS = [
         'email' => 'fields.email_address',
         'expected_value_cents' => 'fields.expected_value',
         'lead_id' => 'fields.lead',
@@ -34,7 +34,7 @@ class ActionLogFieldCatalog
         'project_id' => 'fields.project',
     ];
 
-    private const LEAD_TRACKED_FIELDS = [
+    private const array LEAD_TRACKED_FIELDS = [
         'name',
         'email',
         'company',
@@ -51,7 +51,7 @@ class ActionLogFieldCatalog
 
     public function fieldLabel(string $field): string
     {
-        return Localization::translate(self::FIELD_LABELS[$field] ?? "fields.{$field}");
+        return Localization::translate(self::FIELD_LABELS[$field] ?? sprintf('fields.%s', $field));
     }
 
     public function title(Model $actionable): string

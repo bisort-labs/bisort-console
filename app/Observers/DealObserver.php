@@ -6,8 +6,8 @@ namespace App\Observers;
 
 use App\DTOs\ActionLog\ActionLogSummary;
 use App\Models\Deal;
-use App\Support\ActionLogs\ActionLogChangeSummaryBuilder;
-use App\Support\ActionLogs\ActionLogManager;
+use App\Services\ActionLog\ActionLogChangeSummaryBuilder;
+use App\Services\ActionLog\ActionLogManager;
 
 class DealObserver
 {

@@ -7,7 +7,7 @@ use App\Models\ClientProject;
 use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\User;
-use App\Support\Deals\DealMoney;
+use App\Services\Deal\DealMoney;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;

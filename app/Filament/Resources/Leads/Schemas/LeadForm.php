@@ -6,7 +6,7 @@ namespace App\Filament\Resources\Leads\Schemas;
 
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
-use App\Support\Localization;
+use App\Services\Localization;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;

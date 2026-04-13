@@ -7,7 +7,7 @@ namespace App\Filament\Resources\Deals\Tables;
 use App\Enums\DealStage;
 use App\Filament\Resources\Leads\LeadResource;
 use App\Models\Deal;
-use App\Support\Localization;
+use App\Services\Localization;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -102,6 +102,31 @@ class DealsTable
                 ->label(Localization::translate('fields.lead'))
                 ->relationship('lead', 'name')
                 ->searchable(),
+        ];
+    }
+
+    /**
+     * @return list<Action>
+     */
+    private static function getRecordActions(): array
+    {
+        return [
+            ViewAction::make(),
+            EditAction::make(),
+        ];
+    }
+
+    /**
+     * @return list<ActionGroup>
+     */
+    private static function getToolbarActions(): array
+    {
+        return [
+            BulkActionGroup::make([
+                DeleteBulkAction::make(),
+                ForceDeleteBulkAction::make(),
+                RestoreBulkAction::make(),
+            ]),
         ];
     }
 
@@ -201,30 +226,5 @@ class DealsTable
                 })
             ;
         });
-    }
-
-    /**
-     * @return list<Action>
-     */
-    private static function getRecordActions(): array
-    {
-        return [
-            ViewAction::make(),
-            EditAction::make(),
-        ];
-    }
-
-    /**
-     * @return list<ActionGroup>
-     */
-    private static function getToolbarActions(): array
-    {
-        return [
-            BulkActionGroup::make([
-                DeleteBulkAction::make(),
-                ForceDeleteBulkAction::make(),
-                RestoreBulkAction::make(),
-            ]),
-        ];
     }
 }

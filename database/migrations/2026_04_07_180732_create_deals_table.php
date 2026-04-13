@@ -22,19 +22,16 @@ return new class extends Migration
             $table->foreignIdFor(Lead::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(ClientProject::class, 'project_id')->nullable()->constrained()->nullOnDelete();
             $table->string('title');
-            $table->enum('stage', DealStage::cases())->default(DealStage::New);
+            $table->enum('stage', DealStage::cases())->default(DealStage::New)->index();
             $table->unsignedBigInteger('expected_value_cents')->default(0);
             $table->char('currency', 3)->default('EUR');
             $table->unsignedSmallInteger('probability')->nullable();
-            $table->date('close_date')->nullable();
+            $table->date('close_date')->nullable()->index();
             $table->string('lost_reason')->nullable();
             $table->text('notes')->nullable();
             $table->foreignIdFor(User::class, 'owner_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
-
-            $table->index('stage');
-            $table->index('close_date');
         });
     }
 

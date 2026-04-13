@@ -6,7 +6,7 @@ namespace App\Filament\Resources\Leads\Tables;
 
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
-use App\Support\Localization;
+use App\Services\Localization;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;

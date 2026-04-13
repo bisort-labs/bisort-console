@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Support\ActionLogs;
+namespace App\Services\ActionLog;
 
-use App\Support\Localization;
+use App\Services\Localization;
 use BackedEnum;
 use DateTimeInterface;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-class ActionLogEnumFormatter
+readonly class ActionLogEnumFormatter
 {
     /**
      * @param  class-string<BackedEnum&HasLabel>  $enumClass
      */
     public function format(
-        BackedEnum|DateTimeInterface|float|int|string|null $value,
+        BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
         string $enumClass,
     ): string {
         $enum = $this->resolveEnum($value, $enumClass);
@@ -30,14 +30,14 @@ class ActionLogEnumFormatter
      * @param  class-string<BackedEnum&HasLabel>  $enumClass
      */
     private function resolveEnum(
-        BackedEnum|DateTimeInterface|float|int|string|null $value,
+        BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
         string $enumClass,
-    ): ?BackedEnum {
+    ): ?HasLabel {
         if ($value instanceof BackedEnum && $value instanceof HasLabel) {
             return $value;
         }
 
-        if (! is_scalar($value) || strval($value) === '') {
+        if (! is_scalar($value) || ! filled($value)) {
             return null;
         }
 
