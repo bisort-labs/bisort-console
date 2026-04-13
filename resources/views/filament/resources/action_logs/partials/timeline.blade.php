@@ -20,25 +20,27 @@
                 </div>
 
                 <div class="flex shrink-0 flex-col items-end gap-2">
-                    <div class="flex items-center gap-1">
-                        <x-filament::icon-button
-                            color="gray"
-                            icon="heroicon-o-pencil-square"
-                            :label="__('actions.edit_action_log')"
-                            :tooltip="__('actions.edit_action_log')"
-                            size="sm"
-                            wire:click="mountAction('editActionLog', { actionLog: {{ $action->id }} })"
-                        />
+                    @if ($action->canManage)
+                        <div class="flex items-center gap-1">
+                            <x-filament::icon-button
+                                color="gray"
+                                icon="heroicon-o-pencil-square"
+                                :label="__('actions.edit_action_log')"
+                                :tooltip="__('actions.edit_action_log')"
+                                size="sm"
+                                wire:click="mountAction('editActionLog', { actionLog: {{ $action->id }} })"
+                            />
 
-                        <x-filament::icon-button
-                            color="danger"
-                            icon="heroicon-o-trash"
-                            :label="__('actions.delete_action_log')"
-                            :tooltip="__('actions.delete_action_log')"
-                            size="sm"
-                            wire:click="mountAction('deleteActionLog', { actionLog: {{ $action->id }} })"
-                        />
-                    </div>
+                            <x-filament::icon-button
+                                color="danger"
+                                icon="heroicon-o-trash"
+                                :label="__('actions.delete_action_log')"
+                                :tooltip="__('actions.delete_action_log')"
+                                size="sm"
+                                wire:click="mountAction('deleteActionLog', { actionLog: {{ $action->id }} })"
+                            />
+                        </div>
+                    @endif
 
                     <div class="text-xs text-gray-500 dark:text-gray-400">
                         {{ $action->happenedAt }}

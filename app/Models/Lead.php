@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
+use App\Models\Concerns\HasActionLogs;
 use Database\Factories\LeadFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Override;
 
@@ -40,7 +40,7 @@ use Override;
 class Lead extends Model
 {
     /** @use HasFactory<LeadFactory> */
-    use HasFactory, HasTimestamps, SoftDeletes;
+    use HasActionLogs, HasFactory, HasTimestamps, SoftDeletes;
 
     /**
      * @return HasMany<Deal, $this>
@@ -56,14 +56,6 @@ class Lead extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
-    }
-
-    /**
-     * @return MorphMany<ActionLog, $this>
-     */
-    public function actionLogs(): MorphMany
-    {
-        return $this->morphMany(ActionLog::class, 'actionable');
     }
 
     /**

@@ -17,6 +17,8 @@ return [
         'no_body_given' => 'No body was given',
         'no_actions_yet' => 'No actions yet.',
         'delete_action_log_confirmation' => 'Are you sure you want to delete this timeline entry?',
+        'lead_details_updated' => 'Lead details updated',
+        'deal_details_updated' => 'Deal details updated',
         'system' => 'System',
     ],
 ];

@@ -157,7 +157,7 @@ class DealForm
             ->searchable()
             ->preload()
             ->visible(static fn (Get $get): bool => self::stageMatches($get('stage'), DealStage::Won))
-            ->dehydrated(static fn (Get $get): bool => self::stageMatches($get('stage'), DealStage::Won))
+            ->dehydratedWhenHidden()
         ;
     }
 
@@ -167,7 +167,7 @@ class DealForm
             ->label(Localization::translate('fields.lost_reason'))
             ->maxLength(255)
             ->visible(static fn (Get $get): bool => self::stageMatches($get('stage'), DealStage::Lost))
-            ->dehydrated(static fn (Get $get): bool => self::stageMatches($get('stage'), DealStage::Lost))
+            ->dehydratedWhenHidden()
             ->required(static fn (Get $get): bool => self::stageMatches($get('stage'), DealStage::Lost))
             ->validationMessages([
                 'required' => Localization::translate('messages.validation.lost_reason_required'),

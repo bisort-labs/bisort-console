@@ -17,6 +17,8 @@ return [
         'no_body_given' => 'Es wurde kein Inhalt angegeben.',
         'no_actions_yet' => 'Noch keine Aktionen vorhanden.',
         'delete_action_log_confirmation' => 'Möchtest du diesen Zeitachsen-Eintrag wirklich löschen?',
+        'lead_details_updated' => 'Lead-Details aktualisiert',
+        'deal_details_updated' => 'Deal-Details aktualisiert',
         'system' => 'System',
     ],
 ];
