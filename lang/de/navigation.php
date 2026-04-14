@@ -12,9 +12,9 @@ return [
             'singular' => 'Kundenprojekt',
             'plural' => 'Kundenprojekte',
         ],
-        'deal' => [
-            'singular' => 'Deal',
-            'plural' => 'Deals',
+        'customer' => [
+            'singular' => 'Kunde',
+            'plural' => 'Kunden',
         ],
         'lead' => [
             'singular' => 'Lead',

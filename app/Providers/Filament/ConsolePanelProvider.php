@@ -6,7 +6,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Console\Pages\Dashboard;
 use App\Http\Middleware\SetLocale;
-use App\Services\Localization;
+use App\Support\Localization;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;

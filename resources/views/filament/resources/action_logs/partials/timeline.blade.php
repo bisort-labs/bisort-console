@@ -6,6 +6,12 @@
         >
             <div class="flex items-start justify-between gap-4">
                 <div class="min-w-0">
+                    <div class="mb-2">
+                        <x-filament::badge :color="$action->typeColor">
+                            {{ $action->typeLabel }}
+                        </x-filament::badge>
+                    </div>
+
                     <div class="text-sm font-medium text-gray-950 dark:text-white">
                         {{ $action->title }}
                     </div>
@@ -14,12 +20,12 @@
                         {{ $action->actorName }}
                     </div>
 
-                    <div class="mt-3 whitespace-pre-line wrap-break-word text-sm text-gray-600 dark:text-gray-300">
+                    <div class="mt-3 whitespace-pre-line break-words text-sm text-gray-600 dark:text-gray-300">
                         {{ $action->body }}
                     </div>
                 </div>
 
-                <div class="flex flex-row-reverse items-center gap-4">
+                <div class="flex shrink-0 flex-col items-end gap-2">
                     @if ($action->canManage)
                         <div class="flex items-center gap-1">
                             <x-filament::icon-button

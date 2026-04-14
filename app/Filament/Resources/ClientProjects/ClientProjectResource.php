@@ -12,7 +12,7 @@ use App\Filament\Resources\ClientProjects\Schemas\ClientProjectForm;
 use App\Filament\Resources\ClientProjects\Schemas\ClientProjectInfolist;
 use App\Filament\Resources\ClientProjects\Tables\ClientProjectsTable;
 use App\Models\ClientProject;
-use App\Services\Localization;
+use App\Support\Localization;
 use BackedEnum;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\RelationManagers\RelationGroup;

@@ -12,7 +12,11 @@ return [
     'sections' => [
         'overview' => 'Übersicht',
         'address' => 'Adresse',
-        'deal_details' => 'Deal-Details',
+        'identity' => 'Identität',
+        'contact' => 'Kontakt',
+        'tax' => 'Steuern',
+        'billing_address' => 'Rechnungsadresse',
+        'defaults' => 'Standardwerte',
         'lead_details' => 'Lead-Details',
         'history' => 'Verlauf',
         'timeline' => 'Zeitachse',

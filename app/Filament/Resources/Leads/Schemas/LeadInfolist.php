@@ -6,7 +6,7 @@ namespace App\Filament\Resources\Leads\Schemas;
 
 use App\Mappers\ActionLogTimelineMapper;
 use App\Models\Lead;
-use App\Services\Localization;
+use App\Support\Localization;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
 use Filament\Schemas\Components\Section;

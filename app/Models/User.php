@@ -56,14 +56,6 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * @return HasMany<Deal, $this>
-     */
-    public function deals(): HasMany
-    {
-        return $this->hasMany(Deal::class, 'owner_id');
-    }
-
-    /**
      * @return array<string, string>
      */
     #[Override]

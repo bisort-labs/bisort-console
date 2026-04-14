@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\ClientProjects\Schemas;
 
 use App\Models\ClientProject;
-use App\Services\Localization;
+use App\Support\Localization;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;

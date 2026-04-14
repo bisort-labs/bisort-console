@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\Localization;
+use App\Support\Localization;
 
 it('translates leaf keys into strings', function (): void {
     expect(Localization::translate('common.language'))->toBe('Language');

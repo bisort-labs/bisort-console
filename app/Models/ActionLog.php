@@ -16,11 +16,11 @@ use Override;
 
 /**
  * @property int $id
- * @property ActionLogType $type
- * @property string|null $title
  * @property string|null $body
- * @property User|null $actor
  * @property Carbon $happened_at
+ * @property string|null $title
+ * @property ActionLogType $type
+ * @property User|null $actor
  */
 #[Fillable([
     'type',

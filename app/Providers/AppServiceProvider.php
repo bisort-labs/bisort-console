@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\Deal;
-use App\Models\Lead;
-use App\Observers\DealObserver;
-use App\Observers\LeadObserver;
+use App\Models\Customer;
+use App\Observers\CustomerObserver;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -26,7 +24,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Deal::observe(DealObserver::class);
-        Lead::observe(LeadObserver::class);
+        Customer::observe(CustomerObserver::class);
     }
 }
