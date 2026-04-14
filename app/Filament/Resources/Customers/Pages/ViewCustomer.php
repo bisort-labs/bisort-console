@@ -9,11 +9,11 @@ use App\Models\ActionLog;
 use App\Models\Customer;
 use App\Support\ActionLogs\CustomerActionLogManager;
 use App\Support\Localization;
+use App\Support\Notifications\ActionLogNotificationManager;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -48,7 +48,7 @@ class ViewCustomer extends ViewRecord
                     is_scalar($body) && filled($body) ? strval($body) : null,
                 );
                 $this->refreshCustomerRecord();
-                $this->sendActionLogUpdatedNotification();
+                app(ActionLogNotificationManager::class)->sendActionLogUpdated();
             })
         ;
     }
@@ -70,7 +70,7 @@ class ViewCustomer extends ViewRecord
             ->action(function (ActionLog $record): void {
                 app(CustomerActionLogManager::class)->delete($record);
                 $this->refreshCustomerRecord();
-                $this->sendActionLogDeletedNotification();
+                app(ActionLogNotificationManager::class)->sendActionLogDeleted();
             })
         ;
     }
@@ -106,7 +106,7 @@ class ViewCustomer extends ViewRecord
                     Auth::id(),
                 );
                 $this->refreshCustomerRecord();
-                $this->sendNoteAddedNotification();
+                app(ActionLogNotificationManager::class)->sendNoteAdded();
             })
         ;
     }
@@ -130,32 +130,5 @@ class ViewCustomer extends ViewRecord
     private function refreshCustomerRecord(): void
     {
         $this->record = $this->getRecord()->refresh();
-    }
-
-    private function sendActionLogUpdatedNotification(): void
-    {
-        Notification::make()
-            ->title(Localization::translate('messages.notifications.action_log_updated'))
-            ->success()
-            ->send()
-        ;
-    }
-
-    private function sendActionLogDeletedNotification(): void
-    {
-        Notification::make()
-            ->title(Localization::translate('messages.notifications.action_log_deleted'))
-            ->success()
-            ->send()
-        ;
-    }
-
-    private function sendNoteAddedNotification(): void
-    {
-        Notification::make()
-            ->title(Localization::translate('messages.notifications.note_added'))
-            ->success()
-            ->send()
-        ;
     }
 }

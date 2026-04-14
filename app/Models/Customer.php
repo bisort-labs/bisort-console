@@ -13,13 +13,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Override;
 
 /**
+ * @property int $id
  * @property array<string, string|null>|null $billing_address
+ * @property string|null $country_code
+ * @property Carbon|null $created_at
+ * @property Carbon|null $deleted_at
+ * @property string|null $email
  * @property EloquentCollection<int, ActionLog> $actionLogs
  * @property bool $is_vat_exempt
+ * @property string $name
+ * @property int|null $payment_terms_days
+ * @property string|null $phone
+ * @property string|null $tax_number
  * @property CustomerType $type
+ * @property Carbon|null $updated_at
+ * @property string|null $vat_exemption_reason
+ * @property string|null $vat_id
  */
 #[Fillable([
     'name',
