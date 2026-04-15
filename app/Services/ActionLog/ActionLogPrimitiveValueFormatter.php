@@ -11,14 +11,24 @@ use DateTimeInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
+/**
+ * @phpstan-type BillingAddress array{
+ *     street: string|null,
+ *     city: string|null,
+ *     state: string|null,
+ *     zip: string|null,
+ *     country: string|null
+ * }
+ */
 readonly class ActionLogPrimitiveValueFormatter
 {
     /**
-     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $snapshot
+     * @param  array<string, BillingAddress|BackedEnum|DateTimeInterface|scalar|null>  $snapshot
+     * @param  BillingAddress|BackedEnum|DateTimeInterface|float|int|string|bool|null  $value
      */
     public function format(
         string $field,
-        BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
+        array|BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
         array $snapshot,
     ): string {
         return match ($field) {
@@ -30,14 +40,20 @@ readonly class ActionLogPrimitiveValueFormatter
         };
     }
 
-    private function formatCurrency(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
+    /**
+     * @param  BillingAddress|BackedEnum|DateTimeInterface|float|int|string|bool|null  $value
+     */
+    private function formatCurrency(array|BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         return is_scalar($value) && filled($value)
             ? strtoupper(strval($value))
             : Localization::translate('common.placeholder');
     }
 
-    private function formatDate(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
+    /**
+     * @param  BillingAddress|BackedEnum|DateTimeInterface|float|int|string|bool|null  $value
+     */
+    private function formatDate(array|BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         if ($value instanceof DateTimeInterface) {
             return Carbon::instance($value)->toDateString();
@@ -49,10 +65,11 @@ readonly class ActionLogPrimitiveValueFormatter
     }
 
     /**
-     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $snapshot
+     * @param  array<string, BillingAddress|BackedEnum|DateTimeInterface|scalar|null>  $snapshot
+     * @param  BillingAddress|BackedEnum|DateTimeInterface|float|int|string|bool|null  $value
      */
     private function formatMoney(
-        BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
+        array|BackedEnum|DateTimeInterface|float|int|string|bool|null $value,
         array $snapshot,
     ): string {
         if (! is_numeric($value)) {
@@ -64,14 +81,20 @@ readonly class ActionLogPrimitiveValueFormatter
         return "{$currency} " . DealMoney::centsToAmount((int) $value);
     }
 
-    private function formatProbability(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
+    /**
+     * @param  BillingAddress|BackedEnum|DateTimeInterface|float|int|string|bool|null  $value
+     */
+    private function formatProbability(array|BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         return is_numeric($value)
             ? sprintf('%d%%', (int) $value)
             : Localization::translate('common.placeholder');
     }
 
-    private function formatText(BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
+    /**
+     * @param  BillingAddress|BackedEnum|DateTimeInterface|float|int|string|bool|null  $value
+     */
+    private function formatText(array|BackedEnum|DateTimeInterface|float|int|string|bool|null $value): string
     {
         if (! is_scalar($value) || blank($value)) {
             return Localization::translate('common.placeholder');

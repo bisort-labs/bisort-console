@@ -6,6 +6,7 @@ return [
     'validation' => [
         'email_address_in_use' => 'Diese E-Mail-Adresse wird bereits verwendet.',
         'lost_reason_required' => 'Ein Verlustgrund ist erforderlich, wenn ein Deal als verloren markiert ist.',
+        'vat_exemption_reason_required' => 'Ein Grund ist erforderlich, wenn der Kunde umsatzsteuerbefreit ist.',
     ],
     'notifications' => [
         'note_added' => 'Notiz hinzugefügt',
@@ -18,6 +19,9 @@ return [
         'no_body_given' => 'Es wurde kein Inhalt angegeben.',
         'no_actions_yet' => 'Noch keine Aktionen vorhanden.',
         'delete_action_log_confirmation' => 'Möchtest du diesen Zeitachsen-Eintrag wirklich löschen?',
+        'customer_created' => 'Kunde erstellt',
+        'customer_created_body' => 'Der Kundendatensatz wurde erstellt.',
+        'customer_details_updated' => 'Kundendetails aktualisiert',
         'lead_details_updated' => 'Lead-Details aktualisiert',
         'deal_details_updated' => 'Deal-Details aktualisiert',
         'system' => 'System',

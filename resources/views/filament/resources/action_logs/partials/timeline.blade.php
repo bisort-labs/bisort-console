@@ -6,8 +6,14 @@
         >
             <div class="flex items-start justify-between gap-4">
                 <div class="min-w-0">
-                    <div class="text-sm font-medium text-gray-950 dark:text-white">
-                        {{ $action->title }}
+                    <div class="flex items-center gap-2">
+                        <x-filament::badge :color="$action->typeColor">
+                            {{ $action->typeLabel }}
+                        </x-filament::badge>
+
+                        <div class="text-sm font-medium text-gray-950 dark:text-white">
+                            {{ $action->title }}
+                        </div>
                     </div>
 
                     <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">

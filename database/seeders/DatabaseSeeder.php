@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\ActionLogType;
 use App\Enums\DealStage;
 use App\Models\ClientProject;
+use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\User;
@@ -89,6 +90,50 @@ class DatabaseSeeder extends Seeder
                     }
                 })
             ;
+        });
+
+        $customers = new EloquentCollection();
+
+        Customer::withoutEvents(function () use (&$customers): void {
+            $customers = Customer::factory(24)->create();
+        });
+
+        $customers->each(function (Customer $customer) use ($owners): void {
+            $actionCount = fake()->numberBetween(0, 5);
+
+            for ($index = 0; $index < $actionCount; $index++) {
+                $type = fake()->randomElement([ActionLogType::Note, ActionLogType::System]);
+                $actorId = $type === ActionLogType::System
+                    ? null
+                    : $owners->random()->getKey();
+
+                $customer->actionLogs()->create([
+                    'type' => $type,
+                    'title' => $type === ActionLogType::System
+                        ? fake()->randomElement([
+                            'Customer created',
+                            'VAT ID updated',
+                            'Billing address updated',
+                        ])
+                        : fake()->randomElement([
+                            'Billing note',
+                            'Tax follow-up',
+                            'Payment preference',
+                            'Customer note',
+                        ]),
+                    'body' => $type === ActionLogType::System
+                        ? fake()->randomElement([
+                            'Customer record was created.',
+                            'VAT identity information was updated.',
+                            'Billing address was updated.',
+                        ])
+                        : fake()->sentence(),
+                    'actor_id' => $actorId,
+                    'happened_at' => Carbon::now()
+                        ->subDays(fake()->numberBetween(0, 30))
+                        ->subHours(fake()->numberBetween(0, 12)),
+                ]);
+            }
         });
     }
 }

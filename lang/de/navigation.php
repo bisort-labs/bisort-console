@@ -8,6 +8,10 @@ return [
         'management' => 'Verwaltung',
     ],
     'resources' => [
+        'customer' => [
+            'singular' => 'Kunde',
+            'plural' => 'Kunden',
+        ],
         'client_project' => [
             'singular' => 'Kundenprojekt',
             'plural' => 'Kundenprojekte',

@@ -9,10 +9,20 @@ use BackedEnum;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @phpstan-type BillingAddress array{
+ *     street: string|null,
+ *     city: string|null,
+ *     state: string|null,
+ *     zip: string|null,
+ *     country: string|null
+ * }
+ */
 readonly class ActionLogChangeSummaryBuilder
 {
     public function __construct(
         private ActionLogFieldCatalog $fieldCatalog,
+        private ActionLogTrackedValueNormalizer $trackedValueNormalizer,
         private ActionLogValueFormatter $valueFormatter,
     ) {
     }
@@ -43,41 +53,24 @@ readonly class ActionLogChangeSummaryBuilder
     /**
      * @param  list<string>  $fields
      *
-     * @return array<string, BackedEnum|DateTimeInterface|scalar|null>
+     * @return array<string, BillingAddress|BackedEnum|DateTimeInterface|scalar|null>
      */
     private function snapshot(Model $actionable, array $fields, bool $original): array
     {
         $snapshot = [];
 
         foreach ($fields as $field) {
-            $snapshot[$field] = $this->normalizedValue($actionable, $field, $original);
+            $snapshot[$field] = $this->trackedValueNormalizer->normalize($actionable, $field, $original);
         }
 
         return $snapshot;
     }
 
-    private function normalizedValue(
-        Model $actionable,
-        string $field,
-        bool $original,
-    ): BackedEnum|DateTimeInterface|float|int|string|bool|null {
-        $value = $original
-            ? $actionable->getOriginal($field)
-            : $actionable->getAttribute($field);
-
-        return match (true) {
-            $value instanceof BackedEnum,
-            $value instanceof DateTimeInterface,
-            is_scalar($value) => $value,
-            default => null,
-        };
-    }
-
     /**
      * @param  list<string>  $trackedFields
      * @param  list<string>  $dirtyFields
-     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $originalAttributes
-     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $currentAttributes
+     * @param  array<string, BillingAddress|BackedEnum|DateTimeInterface|scalar|null>  $originalAttributes
+     * @param  array<string, BillingAddress|BackedEnum|DateTimeInterface|scalar|null>  $currentAttributes
      *
      * @return list<string>
      */
@@ -102,8 +95,8 @@ readonly class ActionLogChangeSummaryBuilder
 
     /**
      * @param  list<string>  $dirtyFields
-     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $originalAttributes
-     * @param  array<string, BackedEnum|DateTimeInterface|scalar|null>  $currentAttributes
+     * @param  array<string, BillingAddress|BackedEnum|DateTimeInterface|scalar|null>  $originalAttributes
+     * @param  array<string, BillingAddress|BackedEnum|DateTimeInterface|scalar|null>  $currentAttributes
      */
     private function resolveLine(
         string $field,

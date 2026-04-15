@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\CustomerType;
 use App\Enums\DealStage;
 use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Models\ClientProject;
+use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\User;
@@ -116,6 +118,66 @@ it('builds a deal change summary with relations, money, dates, and placeholders'
             'Lost reason: - -> Budget constraints',
             'Notes: - -> Need a tighter scope for the next revision.',
             'Owner: Morgan Lee -> Jamie Fox',
+        ]))
+    ;
+});
+
+it('builds a customer change summary with enum, boolean, and billing address values', function (): void {
+    $customer = null;
+
+    Customer::withoutEvents(function () use (&$customer): void {
+        $customer = Customer::query()->create([
+            'name' => 'Northwind GmbH',
+            'type' => CustomerType::B2B->value,
+            'email' => 'billing@northwind.example',
+            'phone' => '+49 30 123456',
+            'country_code' => 'DE',
+            'vat_id' => 'DE123456789',
+            'tax_number' => 'TAX-12345678',
+            'is_vat_exempt' => false,
+            'vat_exemption_reason' => null,
+            'billing_address' => [
+                'street' => 'Unter den Linden 1',
+                'city' => 'Berlin',
+                'state' => 'Berlin',
+                'zip' => '10117',
+                'country' => 'Germany',
+            ],
+        ]);
+    });
+
+    if (! $customer instanceof Customer) {
+        throw new RuntimeException('Expected a customer instance.');
+    }
+
+    $customer->fill([
+        'type' => CustomerType::B2C->value,
+        'country_code' => 'AT',
+        'vat_id' => null,
+        'tax_number' => 'TAX-87654321',
+        'is_vat_exempt' => true,
+        'vat_exemption_reason' => 'Reverse charge',
+        'billing_address' => [
+            'street' => 'Kärntner Ring 1',
+            'city' => 'Vienna',
+            'state' => 'Vienna',
+            'zip' => '1010',
+            'country' => 'Austria',
+        ],
+    ]);
+
+    $summary = app(ActionLogChangeSummaryBuilder::class)->build($customer);
+
+    expect($summary)->not->toBeNull()
+        ->and($summary?->title)->toBe('Customer details updated')
+        ->and($summary?->body)->toBe(implode("\n", [
+            'Type: B2B -> B2C',
+            'Country code: DE -> AT',
+            'VAT ID: DE123456789 -> -',
+            'Tax number: TAX-12345678 -> TAX-87654321',
+            'VAT exempt: No -> Yes',
+            'VAT exemption reason: - -> Reverse charge',
+            'Billing address: Unter den Linden 1, Berlin, Berlin, 10117, Germany -> Kärntner Ring 1, Vienna, Vienna, 1010, Austria',
         ]))
     ;
 });
