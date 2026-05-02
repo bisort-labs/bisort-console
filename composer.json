@@ -1,109 +1,71 @@
 {
-    "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
-    "license": "MIT",
+    "license": "proprietary",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
     "require": {
-        "php": "^8.4",
-        "filament/filament": "^5.4",
-        "laravel/framework": "^13.0",
-        "laravel/tinker": "^3.0",
-        "thecodingmachine/safe": "^3.4"
+        "php": ">=8.4",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "symfony/console": "8.0.*",
+        "symfony/dotenv": "8.0.*",
+        "symfony/flex": "^2",
+        "symfony/framework-bundle": "8.0.*",
+        "symfony/runtime": "8.0.*",
+        "symfony/yaml": "8.0.*"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
-        "larastan/larastan": "^3.9",
-        "laravel/pail": "^1.2.5",
-        "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.6",
-        "nunomaduro/phpinsights": "^2.14",
-        "pestphp/pest": "^4.4",
-        "pestphp/pest-plugin-laravel": "^4.1",
-        "phpstan/phpstan": "^2.1",
-        "phpstan/phpstan-strict-rules": "^2.0",
-        "rector/rector": "^2.3",
-        "squizlabs/php_codesniffer": "^3.13",
-        "thecodingmachine/phpstan-safe-rule": "^1.4"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "symfony/flex": true,
+            "symfony/runtime": true
+        },
+        "bump-after-update": true,
+        "sort-packages": true
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "App\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "App\\Tests\\": "tests/"
         }
+    },
+    "replace": {
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-iconv": "*",
+        "symfony/polyfill-php72": "*",
+        "symfony/polyfill-php73": "*",
+        "symfony/polyfill-php74": "*",
+        "symfony/polyfill-php80": "*",
+        "symfony/polyfill-php81": "*",
+        "symfony/polyfill-php82": "*",
+        "symfony/polyfill-php83": "*",
+        "symfony/polyfill-php84": "*"
     },
     "scripts": {
-        "setup": [
-            "composer install",
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-            "@php artisan key:generate",
-            "@php artisan migrate --force",
-            "npm install",
-            "npm run build",
-            "husky"
-        ],
-        "dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
-        ],
-        "check": [
-            "@php artisan config:clear --ansi",
-            "@analyse",
-            "@refactor:dry",
-            "@insights",
-            "@php artisan test --parallel"
-        ],
-        "analyse": [
-            "phpstan analyse --memory-limit=1G",
-            "phpstan clear-result-cache"
-        ],
-        "format": "@php artisan insights --fix --no-interaction",
-        "refactor": "rector process",
-        "refactor:dry": "rector process --dry-run",
-        "insights": "@php artisan insights --no-interaction",
-        "logs": "@php artisan pail",
-        "post-autoload-dump": [
-            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        },
+        "post-install-cmd": [
+            "@auto-scripts"
         ],
         "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
-        ],
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi"
-        ],
-        "pre-package-uninstall": [
-            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+            "@auto-scripts"
         ]
     },
+    "conflict": {
+        "symfony/symfony": "*"
+    },
     "extra": {
-        "laravel": {
-            "dont-discover": []
+        "symfony": {
+            "allow-contrib": false,
+            "require": "8.0.*"
         }
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "pestphp/pest-plugin": true,
-            "php-http/discovery": true
-        }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    }
 }
