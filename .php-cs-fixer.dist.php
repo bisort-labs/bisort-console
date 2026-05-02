@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-$paths = [__DIR__.'/src'];
+$paths = [
+    __DIR__.'/src',
+];
 
-if (is_dir(__DIR__.'/tests')) {
-    $paths[] = __DIR__.'/tests';
-}
-
-$finder = (new PhpCsFixer\Finder())
+$finder = new PhpCsFixer\Finder()
     ->in($paths)
 ;
 
-return (new PhpCsFixer\Config())
+return new PhpCsFixer\Config()
     ->setRiskyAllowed(true)
     ->setRules([
         '@Symfony' => true,
@@ -23,7 +21,16 @@ return (new PhpCsFixer\Config())
             'imports_order' => ['class', 'function', 'const'],
             'sort_algorithm' => 'alpha',
         ],
+        'trailing_comma_in_multiline' => [
+            'elements' => ['arguments', 'arrays', 'parameters'],
+        ],
+        'global_namespace_import' => [
+            'import_classes' => true,
+            'import_constants' => false,
+            'import_functions' => false,
+        ],
         'strict_param' => true,
+        'yoda_style' => false,
     ])
     ->setFinder($finder)
 ;

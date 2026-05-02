@@ -6,12 +6,20 @@ namespace App\User\Domain;
 
 use App\User\Infrastructure\Persistence\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use LogicException;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
+#[UniqueEntity(
+    fields: ['username'],
+    message: 'Username already taken',
+    errorPath: 'username',
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -19,7 +27,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: 'Username cannot be blank')]
+    #[Assert\Length(
+        min: 3,
+        max: 180,
+        minMessage: 'Username cannot be less than 3 characters',
+        maxMessage: 'Username cannot be less than 18 characters',
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9._-]+$/',
+        message: 'Username may only contain letters, numbers, dots, underscores, and hyphens.',
+    )]
     private ?string $username = null;
 
     /** @var list<string> */
@@ -27,6 +46,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private array $roles = [];
 
     #[ORM\Column]
+    #[Assert\NotBlank(
+        message: 'Password cannot be empty.',
+    )]
+    #[Assert\Length(
+        min: 12,
+        minMessage: 'Password must contain at least {{ limit }} characters.',
+    )]
     private ?string $password = null;
 
     public function getId(): ?int
@@ -49,7 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         if ($this->username === null || $this->username === '') {
-            throw new \LogicException('User identifier is not set.');
+            throw new LogicException('User identifier is not set.');
         }
 
         return $this->username;
