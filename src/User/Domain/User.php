@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Domain;
 
 use App\User\Infrastructure\Persistence\UserRepository;
@@ -46,15 +48,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return (string) $this->username;
+        if ($this->username === null || $this->username === '') {
+            throw new \LogicException('User identifier is not set.');
+        }
+
+        return $this->username;
     }
 
+    /**
+     * @return list<string>
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;
         $roles[] = 'ROLE_USER';
 
-        return array_unique($roles);
+        return array_values(array_unique($roles));
     }
 
     /**
@@ -82,7 +91,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+
+        if (null !== $this->password) {
+            $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+        }
 
         return $data;
     }
