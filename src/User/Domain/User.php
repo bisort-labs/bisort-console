@@ -9,6 +9,7 @@ use App\User\Infrastructure\Persistence\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use LogicException;
+use Override;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -66,6 +67,7 @@ class User extends AbstractResource implements UserInterface, PasswordAuthentica
         return $this;
     }
 
+    #[Override]
     public function getUserIdentifier(): string
     {
         if ($this->username === null || $this->username === '') {
@@ -78,6 +80,7 @@ class User extends AbstractResource implements UserInterface, PasswordAuthentica
     /**
      * @return list<string>
      */
+    #[Override]
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -96,6 +99,7 @@ class User extends AbstractResource implements UserInterface, PasswordAuthentica
         return $this;
     }
 
+    #[Override]
     public function getPassword(): ?string
     {
         return $this->password;

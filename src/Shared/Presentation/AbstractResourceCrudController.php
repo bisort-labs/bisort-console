@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Presentation;
 
+use App\Shared\Application\ResourceProcessorInterface;
 use App\Shared\Domain\AbstractResource;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -16,14 +17,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\NullFilter;
 use Override;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @template TEntity of AbstractResource
@@ -32,16 +36,32 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 abstract class AbstractResourceCrudController extends AbstractCrudController
 {
-    public function __construct(
-        private readonly RequestStack $requestStack,
-    ) {
-    }
+    private const string ACTION_RESTORE = 'restore';
+    private const string ACTION_BATCH_RESTORE = 'batchRestore';
+
+    /** @var iterable<ResourceProcessorInterface<AbstractResource>> */
+    private iterable $resourceProcessors = [];
 
     /**
      * @return class-string<TEntity>
      */
     #[Override]
     abstract public static function getEntityFqcn(): string;
+
+    public function __construct(
+        private readonly RequestStack $requestStack,
+    ) {
+    }
+
+    /**
+     * @param iterable<ResourceProcessorInterface<AbstractResource>> $resourceProcessors
+     */
+    #[Required]
+    public function setResourceProcessors(
+        #[AutowireIterator('shared.application.resource_processor')] iterable $resourceProcessors,
+    ): void {
+        $this->resourceProcessors = $resourceProcessors;
+    }
 
     #[Override]
     public function createIndexQueryBuilder(
@@ -69,14 +89,19 @@ abstract class AbstractResourceCrudController extends AbstractCrudController
     #[Override]
     public function configureActions(Actions $actions): Actions
     {
-        $restore = Action::new('restore', 'Restore', 'fa fa-undo')
-            ->linkToCrudAction('restore')
+        $restore = Action::new(self::ACTION_RESTORE, 'Restore', 'fa fa-undo')
+            ->linkToCrudAction(self::ACTION_RESTORE)
             ->displayIf(static fn (object $entity): bool => $entity instanceof AbstractResource)
             ->askConfirmation('Restore this item?');
 
+        $batchRestore = Action::new(self::ACTION_BATCH_RESTORE, 'Restore', 'fa fa-undo')
+            ->createAsBatchAction()
+            ->linkToCrudAction(self::ACTION_BATCH_RESTORE);
+
         return $actions
             ->add(Crud::PAGE_INDEX, $restore)
-            ->add(Crud::PAGE_DETAIL, $restore);
+            ->add(Crud::PAGE_DETAIL, $restore)
+            ->addBatchAction($batchRestore);
     }
 
     #[Override]
@@ -86,6 +111,39 @@ abstract class AbstractResourceCrudController extends AbstractCrudController
         $entityManager->flush();
     }
 
+    #[Override]
+    public function persistEntity(EntityManagerInterface $entityManager, object $entityInstance): void
+    {
+        $this->processResource($entityInstance);
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    #[Override]
+    public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
+    {
+        $this->processResource($entityInstance);
+
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    private function processResource(object $entityInstance): void
+    {
+        if (!$entityInstance instanceof AbstractResource) {
+            return;
+        }
+
+        foreach ($this->resourceProcessors as $resourceProcessor) {
+            if (!$resourceProcessor->supports($entityInstance)) {
+                continue;
+            }
+
+            $resourceProcessor->process($entityInstance);
+
+            return;
+        }
+    }
+
     private function addDeletedAtFilter(QueryBuilder $queryBuilder, string $alias): QueryBuilder
     {
         if ($this->hasFilterFor('deletedAt')) {
@@ -93,6 +151,17 @@ abstract class AbstractResourceCrudController extends AbstractCrudController
         }
 
         return $queryBuilder->andWhere(sprintf('%s.deletedAt IS NULL', $alias));
+    }
+
+    private function hasFilterFor(string $propertyName): bool
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (!$request instanceof Request) {
+            return false;
+        }
+
+        return array_key_exists($propertyName, $request->query->all('filters'));
     }
 
     /**
@@ -115,15 +184,35 @@ abstract class AbstractResourceCrudController extends AbstractCrudController
         return $this->redirectBack();
     }
 
-    private function hasFilterFor(string $propertyName): bool
-    {
-        $request = $this->requestStack->getCurrentRequest();
-
-        if (!$request instanceof Request) {
-            return false;
+    /**
+     * @param AdminContext<TEntity>   $context
+     * @param BatchActionDto<TEntity> $batchActionDto
+     */
+    #[AdminRoute(path: '/batch-restore', name: 'batch_restore', options: ['methods' => ['POST']])]
+    public function batchRestore(
+        AdminContext $context,
+        BatchActionDto $batchActionDto,
+        EntityManagerInterface $entityManager,
+    ): RedirectResponse {
+        if (!$this->isCsrfTokenValid('ea-batch-action-'.self::ACTION_BATCH_RESTORE.'-'.$batchActionDto->getEntityFqcn(), $batchActionDto->getCsrfToken())) {
+            return $this->redirectToRoute($context->getDashboardRouteName());
         }
 
-        return array_key_exists($propertyName, $request->query->all('filters'));
+        $repository = $entityManager->getRepository($batchActionDto->getEntityFqcn());
+
+        foreach ($batchActionDto->getEntityIds() as $entityId) {
+            $entity = $repository->find($entityId);
+
+            if (!$entity instanceof AbstractResource) {
+                continue;
+            }
+
+            $entity->restore();
+        }
+
+        $entityManager->flush();
+
+        return $this->redirectBack();
     }
 
     private function redirectBack(): RedirectResponse

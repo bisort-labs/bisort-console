@@ -6,6 +6,8 @@ namespace App\Client\Application;
 
 use App\Client\Domain\ClientProject;
 use App\Shared\Application\ResourceProcessorInterface;
+use App\Shared\Domain\AbstractResource;
+use Override;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
@@ -18,6 +20,13 @@ readonly class ClientProjectProcessor implements ResourceProcessorInterface
     ) {
     }
 
+    #[Override]
+    public function supports(AbstractResource $resource): bool
+    {
+        return $resource instanceof ClientProject;
+    }
+
+    #[Override]
     public function process(object $entity): ClientProject
     {
         $this->generateSlug($entity);
