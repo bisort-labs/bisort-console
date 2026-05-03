@@ -40,6 +40,7 @@ abstract class AbstractResourceCrudController extends AbstractCrudController
     /**
      * @return class-string<TEntity>
      */
+    #[Override]
     abstract public static function getEntityFqcn(): string;
 
     #[Override]
@@ -78,6 +79,7 @@ abstract class AbstractResourceCrudController extends AbstractCrudController
             ->add(Crud::PAGE_DETAIL, $restore);
     }
 
+    #[Override]
     public function deleteEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         $entityInstance->markAsDeleted();

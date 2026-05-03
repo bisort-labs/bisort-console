@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain;
 
+use App\Shared\Domain\AbstractResource;
 use App\User\Infrastructure\Persistence\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,13 +22,8 @@ use Symfony\Component\Validator\Constraints as Assert;
     message: 'Username already taken',
     errorPath: 'username',
 )]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User extends AbstractResource implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
-
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Assert\NotBlank(message: 'Username cannot be blank')]
     #[Assert\Length(
@@ -57,11 +53,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         maxMessage: 'Password must contain at most {{ limit }} characters.',
     )]
     private ?string $password = null;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getUsername(): ?string
     {
