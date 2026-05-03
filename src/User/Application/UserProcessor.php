@@ -8,7 +8,7 @@ use App\User\Domain\User;
 use DomainException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final readonly class CreateUser
+final readonly class UserProcessor
 {
     public function __construct(
         private UserPasswordHasherInterface $passwordHasher,

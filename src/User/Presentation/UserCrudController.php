@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\User\Presentation;
 
-use App\User\Application\CreateUser;
+use App\User\Application\UserProcessor;
 use App\User\Domain\User;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * @extends AbstractCrudController<User>
@@ -18,7 +17,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class UserCrudController extends AbstractCrudController
 {
     public function __construct(
-        private readonly CreateUser $createUser,
+        private readonly UserProcessor $createUser,
     ) {
     }
 

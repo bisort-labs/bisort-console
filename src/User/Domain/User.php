@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Domain;
 
 use App\User\Infrastructure\Persistence\UserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use LogicException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -24,16 +25,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Assert\NotBlank(message: 'Username cannot be blank')]
     #[Assert\Length(
         min: 3,
         max: 180,
-        minMessage: 'Username cannot be less than 3 characters',
-        maxMessage: 'Username cannot be less than 18 characters',
+        minMessage: 'Username cannot be less than {{ limit }} characters',
+        maxMessage: 'Username cannot be more than {{ limit }} characters',
     )]
     #[Assert\Regex(
         pattern: '/^[a-zA-Z0-9._-]+$/',
@@ -45,13 +46,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private array $roles = [];
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     #[Assert\NotBlank(
         message: 'Password cannot be empty.',
     )]
     #[Assert\Length(
         min: 12,
+        max: 255,
         minMessage: 'Password must contain at least {{ limit }} characters.',
+        maxMessage: 'Password must contain at most {{ limit }} characters.',
     )]
     private ?string $password = null;
 

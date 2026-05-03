@@ -10,11 +10,24 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
+            Shared:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/src/Shared/Domain'
+                prefix: 'App\Shared\Domain'
+
             User:
                 is_bundle: false
                 type: attribute
                 dir: '%kernel.project_dir%/src/User/Domain'
                 prefix: 'App\User\Domain'
+
+            Client:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/src/Client/Domain'
+                prefix: 'App\Client\Domain'
+
 when@test:
     doctrine:
         dbal:

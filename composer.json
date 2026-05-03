@@ -77,8 +77,8 @@
         "rector:check": "rector process --dry-run",
         "rector:fix": "rector process",
         "quality": [
-            "@phpstan",
             "@cs:check",
+            "@phpstan",
             "@rector:check"
         ]
     },
