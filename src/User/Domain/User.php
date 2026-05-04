@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\User\Domain;
 
+use App\Client\Domain\Lead;
 use App\Shared\Domain\AbstractResource;
 use App\User\Infrastructure\Persistence\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use LogicException;
@@ -54,6 +57,17 @@ class User extends AbstractResource implements UserInterface, PasswordAuthentica
         maxMessage: 'Password must contain at most {{ limit }} characters.',
     )]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, Lead>
+     */
+    #[ORM\OneToMany(targetEntity: Lead::class, mappedBy: 'owner')]
+    private Collection $leads;
+
+    public function __construct()
+    {
+        $this->leads = new ArrayCollection();
+    }
 
     public function getUsername(): ?string
     {
@@ -121,5 +135,33 @@ class User extends AbstractResource implements UserInterface, PasswordAuthentica
         }
 
         return $data;
+    }
+
+    /**
+     * @return Collection<int, Lead>
+     */
+    public function getLeads(): Collection
+    {
+        return $this->leads;
+    }
+
+    public function addLead(Lead $lead): static
+    {
+        if (!$this->leads->contains($lead)) {
+            $this->leads->add($lead);
+            $lead->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLead(Lead $lead): static
+    {
+        // set the owning side to null (unless already changed)
+        if ($this->leads->removeElement($lead) && $lead->getOwner() === $this) {
+            $lead->setOwner(null);
+        }
+
+        return $this;
     }
 }
