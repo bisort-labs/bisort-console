@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin;
 
 use App\Client\Presentation\ClientProjectCrudController;
+use App\Client\Presentation\DealCrudController;
 use App\Client\Presentation\LeadCrudController;
 use App\User\Presentation\UserCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
@@ -40,6 +41,7 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Clients');
         yield MenuItem::linkTo(LeadCrudController::class, 'Leads', 'fa-solid fa-user-plus');
+        yield MenuItem::linkTo(DealCrudController::class, 'Deals', 'fa-solid fa-handshake');
         yield MenuItem::linkTo(ClientProjectCrudController::class, 'Client Projects', 'fa-solid fa-briefcase');
     }
 }

@@ -8,6 +8,8 @@ use App\Client\Domain\Enum\LeadSource;
 use App\Client\Infrastructure\Persistence\LeadRepository;
 use App\Shared\Domain\AbstractResource;
 use App\User\Domain\User;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -65,6 +67,17 @@ class Lead extends AbstractResource
 
     #[ORM\ManyToOne(inversedBy: 'leads')]
     private ?User $owner = null;
+
+    /**
+     * @var Collection<int, Deal>
+     */
+    #[ORM\OneToMany(targetEntity: Deal::class, mappedBy: 'lead')]
+    private Collection $deals;
+
+    public function __construct()
+    {
+        $this->deals = new ArrayCollection();
+    }
 
     public function getName(): ?string
     {
@@ -194,6 +207,33 @@ class Lead extends AbstractResource
     public function setOwner(?User $owner): self
     {
         $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Deal>
+     */
+    public function getDeals(): Collection
+    {
+        return $this->deals;
+    }
+
+    public function addDeal(Deal $deal): self
+    {
+        if (!$this->deals->contains($deal)) {
+            $this->deals->add($deal);
+            $deal->setLead($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDeal(Deal $deal): self
+    {
+        if ($this->deals->removeElement($deal) && $deal->getLead() === $this) {
+            $deal->setLead(null);
+        }
 
         return $this;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain;
 
+use App\Client\Domain\Deal;
 use App\Client\Domain\Lead;
 use App\Shared\Domain\AbstractResource;
 use App\User\Infrastructure\Persistence\UserRepository;
@@ -64,9 +65,16 @@ class User extends AbstractResource implements UserInterface, PasswordAuthentica
     #[ORM\OneToMany(targetEntity: Lead::class, mappedBy: 'owner')]
     private Collection $leads;
 
+    /**
+     * @var Collection<int, Deal>
+     */
+    #[ORM\OneToMany(targetEntity: Deal::class, mappedBy: 'owner')]
+    private Collection $deals;
+
     public function __construct()
     {
         $this->leads = new ArrayCollection();
+        $this->deals = new ArrayCollection();
     }
 
     public function getUsername(): ?string
@@ -160,6 +168,33 @@ class User extends AbstractResource implements UserInterface, PasswordAuthentica
         // set the owning side to null (unless already changed)
         if ($this->leads->removeElement($lead) && $lead->getOwner() === $this) {
             $lead->setOwner(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Deal>
+     */
+    public function getDeals(): Collection
+    {
+        return $this->deals;
+    }
+
+    public function addDeal(Deal $deal): static
+    {
+        if (!$this->deals->contains($deal)) {
+            $this->deals->add($deal);
+            $deal->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDeal(Deal $deal): static
+    {
+        if ($this->deals->removeElement($deal) && $deal->getOwner() === $this) {
+            $deal->setOwner(null);
         }
 
         return $this;

@@ -6,6 +6,8 @@ namespace App\Client\Domain;
 
 use App\Client\Infrastructure\Persistence\ClientProjectRepository;
 use App\Shared\Domain\AbstractResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -29,6 +31,17 @@ class ClientProject extends AbstractResource
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
+
+    /**
+     * @var Collection<int, Deal>
+     */
+    #[ORM\OneToMany(targetEntity: Deal::class, mappedBy: 'project')]
+    private Collection $deals;
+
+    public function __construct()
+    {
+        $this->deals = new ArrayCollection();
+    }
 
     public function getTitle(): ?string
     {
@@ -62,6 +75,33 @@ class ClientProject extends AbstractResource
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Deal>
+     */
+    public function getDeals(): Collection
+    {
+        return $this->deals;
+    }
+
+    public function addDeal(Deal $deal): self
+    {
+        if (!$this->deals->contains($deal)) {
+            $this->deals->add($deal);
+            $deal->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDeal(Deal $deal): self
+    {
+        if ($this->deals->removeElement($deal) && $deal->getProject() === $this) {
+            $deal->setProject(null);
+        }
 
         return $this;
     }
