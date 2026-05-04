@@ -3,24 +3,28 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\Set\ValueObject\SetList;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/app',
-        __DIR__ . '/config',
-        __DIR__ . '/database',
-        __DIR__ . '/routes',
-        __DIR__ . '/tests',
-    ])
-    ->withSkip([
-        __DIR__ . '/bootstrap/cache',
-        __DIR__ . '/storage',
-        __DIR__ . '/vendor',
-    ])
-    ->withSets([
-        SetList::CODE_QUALITY,
-        SetList::DEAD_CODE,
-        SetList::TYPE_DECLARATION,
-    ])
+$paths = [__DIR__.'/src'];
+
+if (is_dir(__DIR__.'/tests')) {
+    $paths[] = __DIR__.'/tests';
+}
+
+$rectorConfig = RectorConfig::configure()
+    ->withPaths($paths)
+    ->withPreparedSets(
+        deadCode: true,
+        codeQuality: true,
+        typeDeclarations: true,
+        earlyReturn: true,
+        symfonyCodeQuality: true,
+    )
 ;
+
+$containerXmlPath = __DIR__.'/var/cache/dev/App_KernelDevDebugContainer.xml';
+
+if (is_file($containerXmlPath)) {
+    $rectorConfig = $rectorConfig->withSymfonyContainerXml($containerXmlPath);
+}
+
+return $rectorConfig;
