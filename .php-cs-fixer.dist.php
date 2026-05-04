@@ -6,6 +6,10 @@ $paths = [
     __DIR__.'/src',
 ];
 
+if (is_dir(__DIR__.'/tests')) {
+    $paths[] = __DIR__.'/tests';
+}
+
 $finder = new PhpCsFixer\Finder()
     ->in($paths)
 ;
@@ -21,6 +25,7 @@ return new PhpCsFixer\Config()
             'imports_order' => ['class', 'function', 'const'],
             'sort_algorithm' => 'alpha',
         ],
+        'php_unit_method_casing' => ['case' => 'snake_case'],
         'trailing_comma_in_multiline' => [
             'elements' => ['arguments', 'arrays', 'parameters'],
         ],

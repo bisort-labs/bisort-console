@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$phpunit = dirname(__DIR__).'/vendor/bin/simple-phpunit';
+$arguments = array_map('escapeshellarg', array_slice($argv, 1));
+$command = escapeshellarg($phpunit);
+
+if ($arguments !== []) {
+    $command .= ' '.implode(' ', $arguments);
+}
+
+passthru($command, $exitCode);
+
+exit($exitCode);

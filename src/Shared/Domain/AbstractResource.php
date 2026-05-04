@@ -73,6 +73,11 @@ abstract class AbstractResource
         $this->isActive = true;
     }
 
+    public function isDeleted(): bool
+    {
+        return $this->deletedAt instanceof DateTimeImmutable;
+    }
+
     public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
